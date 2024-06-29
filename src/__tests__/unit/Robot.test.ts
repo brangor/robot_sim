@@ -1,7 +1,7 @@
-// src/__tests__/Robot.test.ts
+// src/__tests__/unit/Robot.test.ts
 
-import { Robot } from "../models/Robot";
-import { Table } from "../models/Table";
+import { Robot } from "../../models/Robot";
+import { Table } from "../../models/Table";
 
 describe('Robot', () => {
   let table: Table;
@@ -15,19 +15,19 @@ describe('Robot', () => {
 	test("should not be able to move before being placed", () => {
 		robot.move(table);
 
-		expect(robot.report()).toBe("Robot is not yet placed on a table");
+		expect(robot.report()).toBe(undefined)
 	});
 
 	test("should not turn left before being placed", () => {
 		robot.turn("LEFT");
 
-		expect(robot.report()).toBe("Robot is not yet placed on a table");
+		expect(robot.report()).toBe(undefined)
 	});
 
 	test("should not turn right before being placed", () => {
 		robot.turn("RIGHT");
 
-		expect(robot.report()).toBe("Robot is not yet placed on a table");
+		expect(robot.report()).toBe(undefined)
 	});
 
 	test('should be placeable', () => {

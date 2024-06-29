@@ -8,6 +8,8 @@ import type {
 } from "../types/Types";
 import { TurningLookup, MoveOffsetLookup, addCoordinates } from "../util/helpers";
 
+const CardinalDirections: CardinalDirection[] = ["NORTH", "EAST", "SOUTH", "WEST"];
+
 export class Robot {
   private coordinate: Coordinate = {
     x: 0,
@@ -32,6 +34,18 @@ export class Robot {
       return;
     }
 
+    if (!CardinalDirections.includes(direction)) {
+      return;
+    }
+
+    if (coordinate.x < 0 || coordinate.y < 0) {
+      return;
+    }
+
+    if (coordinate.x >= 5 || coordinate.y >= 5) {
+      return;
+    }
+
     this.coordinate = {
       x: coordinate.x,
       y: coordinate.y,
@@ -42,9 +56,9 @@ export class Robot {
     this.isPlaced = true;
   }
 
-  report(): string {
+  report(): string | void {
     if (!this.isPlaced) {
-      return "Robot is not yet placed on a table";
+      return;
     }
     return `${this.coordinate.x},${this.coordinate.y},${this.facing}`;
   }

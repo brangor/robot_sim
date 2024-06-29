@@ -57,6 +57,10 @@ export class TurnCommand implements Command {
 
 export class ReportCommand implements Command {
 	execute(robot: Robot, table: Table): void {
-		console.log("Output: " + robot.report());
+		const output: string | void = robot.report();
+
+		if (output) {
+			console.log("Output: " + output);
+		}
 	}
 }
