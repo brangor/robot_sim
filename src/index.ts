@@ -24,12 +24,11 @@ function processCommandsFromFile(filePath: string) {
       const testCases = JSON.parse(data);
       testCases.forEach((testCase: TestDataType) => {
 				commandProcessor.resetSimulation();
-				console.log(`Test Case: ${testCase.description}`);
+				console.log(`\nTest Case: ${testCase.description}`);
         testCase.commands.forEach((command) => {
           console.log("> " + command);
           commandProcessor.process(command);
         });
-        console.log(""); // Add a newline for readability between test cases
       });
     } catch (parseError) {
       console.error(`Error parsing JSON data: ${parseError}`);
