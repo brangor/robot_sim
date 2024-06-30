@@ -1,12 +1,13 @@
 // src/models/Table.ts
 
 import type { Coordinate } from "../types/Types";
+import { isValidTableCoordinate } from "../util/validation";
 
 export class Table {
   constructor(private height: number, private width: number) {}
 
   isValidPosition(c: Coordinate): boolean {
-    return c.y >= 0 && c.y < this.height && c.x >= 0 && c.x < this.width;
+    return isValidTableCoordinate(c, this.height, this.width);
   }
 
 	getHeight(): number {

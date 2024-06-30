@@ -29,12 +29,16 @@ export const MoveOffsetLookup: { [key in CardinalDirection]: Coordinate } = {
 	NORTH: { x: 0, y: 1 },
 	EAST: { x: 1, y: 0 },
 	SOUTH: { x: 0, y: -1 },
-	WEST: { x: -1, y: 0 },
+	WEST: { x: -1, y: 0 }
 };
 
-export function addCoordinates(a: Coordinate, b: Coordinate): Coordinate {
+export function addCoordinates(
+  a: Coordinate,
+  b: Coordinate
+): Coordinate {
+
 	return {
-		x: a.x + b.x,
-		y: a.y + b.y,
-	};
+    x: (a.x ?? 0) + (b.x ?? 0),
+    y: (a.y ?? 0) + (b.y ?? 0)
+  };
 }

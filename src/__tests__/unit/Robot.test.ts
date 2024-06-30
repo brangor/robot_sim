@@ -13,7 +13,7 @@ describe('Robot', () => {
   });
 
 	test("should not be able to move before being placed", () => {
-		robot.move(table);
+		robot.move();
 
 		expect(robot.report()).toBe(undefined)
 	});
@@ -33,7 +33,7 @@ describe('Robot', () => {
 	test('should be placeable', () => {
 		robot.place({ x: 2, y: 2 }, "NORTH");
 
-		expect(robot.isOnTable(table)).toBe(true);
+		expect(robot.hasValidPosition()).toBe(true);			expect(table.isValidPosition(robot.getPosition())).toBe(true);
 		expect(robot.report()).toBe("2,2,NORTH");
 	});
 
@@ -43,7 +43,7 @@ describe('Robot', () => {
 		});
 
 		test('should be moveable', () => {
-			robot.move(table);
+			robot.move();
 
 			expect(robot.report()).toBe('2,3,NORTH');
 		});
@@ -61,65 +61,24 @@ describe('Robot', () => {
 		});
 
 		test('should be able to move in all directions', () => {
-			robot.move(table);
+			robot.move();
 
 			expect(robot.report()).toBe('2,3,NORTH');
 
 			robot.turn("LEFT");
-			robot.move(table);
+			robot.move();
 
 			expect(robot.report()).toBe('1,3,WEST');
 
 			robot.turn("LEFT");
-			robot.move(table);
+			robot.move();
 
 			expect(robot.report()).toBe('1,2,SOUTH');
 
 			robot.turn("LEFT");
-			robot.move(table);
+			robot.move();
 
 			expect(robot.report()).toBe('2,2,EAST');
 		});
-
-		test("should not be able to move off the table", () => {
-			robot.move(table); // to 2,3
-			robot.move(table); // to 2,4
-			robot.move(table); // to 2,5 (invalid, past the edge)
-
-			expect(robot.report()).toBe("2,4,NORTH");
-		});
-
-		test("should not be able to be placed again", () => {
-			robot.place({ x: 3, y: 3 }, "SOUTH");
-
-			expect(robot.report()).toBe("2,2,NORTH");
-		});
-
-	});
-
-	describe("should successfully follow example instructions", () => {
-		test("should correctly handle example 1", () => {
-			robot.place({ x: 0, y: 0 }, "NORTH");
-			robot.move(table);
-
-			expect(robot.report()).toBe("0,1,NORTH");
-		});
-
-		test("should correctly handle example 2", () => {
-			robot.place({ x: 0, y: 0 }, "NORTH");
-			robot.turn("LEFT");
-
-			expect(robot.report()).toBe("0,0,WEST");
-		});
-
-		test("should correctly handle example 3", () => {
-      robot.place({ x: 1, y: 2 }, "EAST");
-      robot.move(table);
-      robot.move(table);
-      robot.turn("LEFT");
-      robot.move(table);
-
-      expect(robot.report()).toBe("3,3,NORTH");
-    });
 	});
 });

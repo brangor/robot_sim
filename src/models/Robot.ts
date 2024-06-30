@@ -1,81 +1,83 @@
 // src/models/Robot.ts
 
-import { Table } from './Table';
 import type {
   Coordinate,
   CardinalDirection,
-	TurningDirection
+  TurningDirection,
 } from "../types/Types";
-import { TurningLookup, MoveOffsetLookup, addCoordinates } from "../util/helpers";
-
-const CardinalDirections: CardinalDirection[] = ["NORTH", "EAST", "SOUTH", "WEST"];
+import {
+  TurningLookup,
+  MoveOffsetLookup,
+  addCoordinates
+} from "../util/helpers";
+import {
+  isValidCardinalDirection,
+  isValidTableCoordinate,
+  isValidTurningDirection
+} from "../util/validation";
 
 export class Robot {
-  private coordinate: Coordinate = {
-    x: 0,
-    y: 0,
-  };
-  private facing: CardinalDirection = "NORTH";
+  private coordinate: Coordinate = { x: undefined, y: undefined };
+  private facing: CardinalDirection | undefined = undefined;
   private isPlaced: boolean = false;
 
-  public calculateNextMoveCoordinates = (): Coordinate => {
-		// Grab offset from helper file lookup, based on current facing direction
-		const offset = MoveOffsetLookup[this.facing];
-		// Add it to current position to see where move would take us
-    return addCoordinates(this.coordinate, offset);
-  };
+  public calculateNextMoveCoordinates(): Coordinate {
+    if (!this.hasValidPosition()) return { x: undefined, y: undefined };
 
-  public isOnTable(table: Table): boolean {
-    return this.isPlaced && table.isValidPosition(this.coordinate);
+    const offset = MoveOffsetLookup[this.facing!];
+    return addCoordinates(this.coordinate, offset);
   }
 
-  place(coordinate: Coordinate, direction: CardinalDirection): void {
-    if (this.isPlaced) {
-      return;
-    }
+  public hasValidPosition(): boolean {
+    return (
+      this.isPlaced &&
+      isValidTableCoordinate(this.coordinate) &&
+      isValidCardinalDirection(this.facing)
+    );
+  }
 
-    if (!CardinalDirections.includes(direction)) {
-      return;
-    }
+  public getPosition(): Coordinate {
+    return this.coordinate;
+  }
 
-    if (coordinate.x < 0 || coordinate.y < 0) {
-      return;
-    }
+  public getFacing(): CardinalDirection | undefined {
+    return this.facing;
+  }
 
-    if (coordinate.x >= 5 || coordinate.y >= 5) {
-      return;
-    }
+  public isOnTable(): boolean {
+    return this.isPlaced;
+  }
 
-    this.coordinate = {
-      x: coordinate.x,
-      y: coordinate.y,
-    };
+  public removeFromTable(): void {
+    this.isPlaced = false;
+    this.coordinate = { x: undefined, y: undefined };
+    this.facing = undefined;
+  }
 
+  public place(coordinate: Coordinate, direction: CardinalDirection): void {
+    if (!isValidCardinalDirection(direction) || !isValidTableCoordinate(coordinate)) return;
+
+    this.coordinate = { x: coordinate.x, y: coordinate.y };
     this.facing = direction;
-
     this.isPlaced = true;
   }
 
-  report(): string | void {
-    if (!this.isPlaced) {
-      return;
-    }
+  public report(): string | void {
+    if (!this.hasValidPosition()) return;
+
     return `${this.coordinate.x},${this.coordinate.y},${this.facing}`;
   }
 
-  move(table: Table): void {
-    if (!this.isPlaced) return;
+  public move(): Coordinate | void {
+    if (!this.hasValidPosition()) return;
 
-    const nextMoveCoordinates = this.calculateNextMoveCoordinates();
-
-    if (table.isValidPosition(nextMoveCoordinates)) {
-      this.coordinate = nextMoveCoordinates;
-    }
+    this.coordinate = this.calculateNextMoveCoordinates();
   }
 
-	turn(turnDirection: TurningDirection): void {
-		if (!this.isPlaced) return;
+  public turn(turnDirection: TurningDirection): void {
+    if (!this.hasValidPosition()) return;
+    if (!isValidTurningDirection(turnDirection)) return;
 
-    this.facing = TurningLookup[this.facing][turnDirection];
-	}
+    this.facing = TurningLookup[this.facing!][turnDirection];
+  }
 }

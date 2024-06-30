@@ -1,12 +1,67 @@
 [
+    {
+    "description": "Simple left turn",
+    "commands": ["PLACE 0,0,NORTH", "LEFT", "REPORT"],
+    "expectedOutput": "Output: 0,0,WEST"
+  },
+  {
+    "description": "Simple right turn",
+    "commands": ["PLACE 0,0,NORTH", "RIGHT", "REPORT"],
+    "expectedOutput": "Output: 0,0,EAST"
+  },
+  {
+    "description": "Bounds check North",
+    "commands": ["PLACE 0,4,NORTH", "MOVE", "REPORT"],
+    "expectedOutput": "Output: 0,4,NORTH"
+  },
+  {
+    "description": "Bounds check East",
+    "commands": ["PLACE 4,0,EAST", "MOVE", "REPORT"],
+    "expectedOutput": "Output: 4,0,EAST"
+  },
+  {
+    "description": "Bounds check South",
+    "commands": ["PLACE 0,0,SOUTH", "MOVE", "REPORT"],
+    "expectedOutput": "Output: 0,0,SOUTH"
+  },
+  {
+    "description": "Bounds check West",
+    "commands": ["PLACE 0,0,WEST", "MOVE", "REPORT"],
+    "expectedOutput": "Output: 0,0,WEST"
+  },
   {
     "description": "Simple move command",
-    "commands": ["PLACE 0,0,NORTH", "MOVE"],
+    "commands": ["PLACE 0,0,NORTH", "MOVE", "REPORT"],
     "expectedOutput": "Output: 0,1,NORTH"
   },
   {
     "description": "Complex sequence with turn and move",
-    "commands": ["PLACE 1,2,EAST", "MOVE", "MOVE", "LEFT", "MOVE"],
+    "commands": ["PLACE 1,2,EAST", "MOVE", "MOVE", "LEFT", "MOVE", "REPORT"],
     "expectedOutput": "Output: 3,3,NORTH"
+  },
+  {
+    "description": "Instructions example 1",
+    "commands": ["PLACE 0,0,NORTH", "MOVE", "REPORT"],
+    "expectedOutput": "Output: 0,1,NORTH"
+  },
+  {
+    "description": "Instructions example 2",
+    "commands": ["PLACE 0,0,NORTH", "LEFT", "REPORT"],
+    "expectedOutput": "Output: 0,0,WEST"
+  },
+  {
+    "description": "Instructions example 3",
+    "commands": ["PLACE 1,2,EAST", "MOVE", "MOVE", "LEFT", "MOVE", "REPORT"],
+    "expectedOutput": "Output: 3,3,NORTH"
+  },
+  {
+    "description": "Long board traversal",
+    "commands": ["PLACE 0,0,NORTH", "MOVE", "MOVE", "MOVE", "MOVE", "RIGHT", "MOVE", "MOVE", "MOVE", "RIGHT", "MOVE", "MOVE", "REPORT"],
+    "expectedOutput":"Output: 3,2,SOUTH"
+  },
+  {
+    "description": "Oops all reports",
+    "commands": ["REPORT", "REPORT", "REPORT", "REPORT", "REPORT", "REPORT"],
+    "expectedOutput":"Running test case: Oops all reports"
   }
 ]
