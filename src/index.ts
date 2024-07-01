@@ -47,7 +47,7 @@ async function main() {
 		}
 	} else {
 		process.stdin.on('data', (data) => {
-			let commandString = getCommandFromInputString(data.toString().trim());
+			let commandString = getCommandFromInputString(data.toString().trim().toUpperCase());
 			processCommands([commandString], commandProcessor);
 			printInputPrompt();
 		});

@@ -23,7 +23,7 @@ export type TestDataType = {
 
 export type PlacementType = {
   coordinates: Coordinate;
-  direction: CardinalDirection;
+  direction: CardinalDirection | undefined;
 };
 
 export type MessageType = {

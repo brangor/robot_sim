@@ -11,9 +11,17 @@ import { Robot } from "../models/Robot";
 import { Table } from "../models/Table";
 import { getPlacementFromArg } from "../util/helpers";
 import { MessageSystem } from "./MessageSystem";
-import { createInfoMessage, createDebugMessage, createErrorMessage } from "../util/message";
+import {
+  createInfoMessage,
+  createDebugMessage,
+  createErrorMessage,
+} from "../util/message";
 
-import type { CommandInputType, TurningDirection, MessageType } from "../types/Types";
+import type {
+  CommandInputType,
+  TurningDirection,
+  MessageType,
+} from "../types/Types";
 
 export class CommandProcessor {
   private robot: Robot;
@@ -91,8 +99,8 @@ export class CommandProcessor {
     return this.messageSystem.getAllOutputs();
   }
 
-  public resetSimulation(): void {
+  public async resetSimulation(): Promise<void> {
     this.robot.reset();
-    this.messageSystem.reset();
+    await this.messageSystem.flush();
   }
 }

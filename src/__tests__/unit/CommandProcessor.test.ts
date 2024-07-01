@@ -1,72 +1,109 @@
 // src/__tests__/unit/CommandProcessor.test.ts
 
-import { CommandProcessor } from '../../services/CommandProcessor';
-import { MessageSystem } from '../../services/MessageSystem';
-import { Robot } from '../../models/Robot';
-import { Table } from '../../models/Table';
-import { getCommandFromInputString } from '../../util/helpers';
+import { CommandProcessor } from "../../services/CommandProcessor";
+import { MessageSystem } from "../../services/MessageSystem";
+import { Robot } from "../../models/Robot";
+import { Table } from "../../models/Table";
+import { getCommandFromInputString } from "../../util/helpers";
 
-describe('CommandProcessor Unit Tests', () => {
-	let table: Table;
-	let robot: Robot;
-	let commandProcessor: CommandProcessor;
-	let messageSystem: MessageSystem;
+describe("CommandProcessor Unit Tests", () => {
+  let table: Table;
+  let robot: Robot;
+  let commandProcessor: CommandProcessor;
+  let messageSystem: MessageSystem;
 
-	beforeEach(() => {
-		table = new Table(5, 5);
-		robot = new Robot();
-		commandProcessor = new CommandProcessor(table, robot, messageSystem);
+  beforeEach(() => {
+    table = new Table(5, 5);
+    robot = new Robot();
+    messageSystem = new MessageSystem();
+    commandProcessor = new CommandProcessor(table, robot, messageSystem);
 
     jest.spyOn(process.stdout, "write").mockImplementation(() => true);
-	});
+  });
 
-	afterEach(() => {
+  afterEach(() => {
     jest.restoreAllMocks();
   });
 
-	describe('process', () => {
-		it('should place the robot on the table', () => {
-			commandProcessor.process(getCommandFromInputString('PLACE 0,0,NORTH'));
-			expect(table.isValidPosition(robot.getPosition())).toBe(true);
-		});
+  describe("process", () => {
+    it("should place the robot on the table", async () => {
+      await commandProcessor.process(
+        getCommandFromInputString("PLACE 0,0,NORTH")
+      );
+      await messageSystem.completeAllMessages(); // Ensure all messages are processed
+      expect(table.isValidPosition(robot.getCoordinates())).toBe(true);
+    });
 
-		it('should move the robot on the table', () => {
-			commandProcessor.process(getCommandFromInputString('PLACE 0,0,NORTH'));
-			commandProcessor.process(getCommandFromInputString('MOVE'));
+    it("should move the robot on the table", async () => {
+      await commandProcessor.process(
+        getCommandFromInputString("PLACE 0,0,NORTH")
+      );
+      await commandProcessor.process(getCommandFromInputString("MOVE"));
+      await commandProcessor.process(getCommandFromInputString("REPORT"));
 
-			commandProcessor.process(getCommandFromInputString('REPORT'));
-			expect(process.stdout.write).toHaveBeenLastCalledWith('Output: 0,1,NORTH');
-		});
+      await messageSystem.completeAllMessages();
 
-		it('should turn the robot left', () => {
-			commandProcessor.process(getCommandFromInputString('PLACE 0,0,NORTH'));
-			commandProcessor.process(getCommandFromInputString('LEFT'));
+      expect(process.stdout.write).toHaveBeenLastCalledWith(
+        "Output: 0,1,NORTH\n"
+      );
+    });
 
-			commandProcessor.process(getCommandFromInputString('REPORT'));
-			expect(process.stdout.write).toHaveBeenLastCalledWith('Output: 0,0,WEST');
-		});
+    it("should turn the robot left", async () => {
+      await commandProcessor.process(
+        getCommandFromInputString("PLACE 0,0,NORTH")
+      );
+      await commandProcessor.process(getCommandFromInputString("LEFT"));
+      await commandProcessor.process(getCommandFromInputString("REPORT"));
 
-		it('should turn the robot right', () => {
-			commandProcessor.process(getCommandFromInputString('PLACE 0,0,NORTH'));
-			commandProcessor.process(getCommandFromInputString('RIGHT'));
+      await messageSystem.completeAllMessages();
 
-			commandProcessor.process(getCommandFromInputString('REPORT'));
-			expect(process.stdout.write).toHaveBeenLastCalledWith('Output: 0,0,EAST');
-		});
+      expect(process.stdout.write).toHaveBeenLastCalledWith(
+        "Output: 0,0,WEST\n"
+      );
+    });
 
-		it('should report the robot position', () => {
-			commandProcessor.process(getCommandFromInputString('PLACE 0,0,NORTH'));
+    it("should turn the robot right", async () => {
+      await commandProcessor.process(
+        getCommandFromInputString("PLACE 0,0,NORTH")
+      );
+      await commandProcessor.process(getCommandFromInputString("RIGHT"));
+      await commandProcessor.process(getCommandFromInputString("REPORT"));
 
-			commandProcessor.process(getCommandFromInputString('REPORT'));
-			expect(process.stdout.write).toHaveBeenLastCalledWith("Output: 0,0,NORTH");
-		});
+      await messageSystem.completeAllMessages();
 
-		it('should ignore invalid commands', () => {
-			commandProcessor.process(getCommandFromInputString('PLACE 8,7,NORTH')); // inval)id
-			commandProcessor.process(getCommandFromInputString('PLACE 3,4,NORTH')); // val)id
-			commandProcessor.process(getCommandFromInputString('BLORP')); // inval)id
-			commandProcessor.process(getCommandFromInputString('REPORT'));
-			expect(process.stdout.write).toHaveBeenLastCalledWith("Output: 3,4,NORTH");
-		});
-	});
+      expect(process.stdout.write).toHaveBeenLastCalledWith(
+        "Output: 0,0,EAST\n"
+      );
+    });
+
+    it("should report the robot position", async () => {
+      await commandProcessor.process(
+        getCommandFromInputString("PLACE 0,0,NORTH")
+      );
+      await commandProcessor.process(getCommandFromInputString("REPORT"));
+
+      await messageSystem.completeAllMessages();
+
+      expect(process.stdout.write).toHaveBeenLastCalledWith(
+        "Output: 0,0,NORTH\n"
+      );
+    });
+
+    it("should ignore invalid commands", async () => {
+      await commandProcessor.process(
+        getCommandFromInputString("PLACE 8,7,NORTH")
+      ); // invalid
+      await commandProcessor.process(
+        getCommandFromInputString("PLACE 3,4,NORTH")
+      ); // valid
+      await commandProcessor.process(getCommandFromInputString("BLORP")); // invalid
+      await commandProcessor.process(getCommandFromInputString("REPORT"));
+
+      await messageSystem.completeAllMessages();
+
+      expect(process.stdout.write).toHaveBeenLastCalledWith(
+        "Output: 3,4,NORTH\n"
+      );
+    });
+  });
 });

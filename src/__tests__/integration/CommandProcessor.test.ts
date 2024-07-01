@@ -1,64 +1,104 @@
-// src/__tests__/integration/CommandProcessor.test.ts
+// src/__tests__/unit/CommandProcessor.test.ts
 
-import path from "path";
-import fs from "fs";
 import { CommandProcessor } from "../../services/CommandProcessor";
 import { MessageSystem } from "../../services/MessageSystem";
 import { Robot } from "../../models/Robot";
 import { Table } from "../../models/Table";
-import { TestDataType } from "../../types/Types";
+import { getCommandFromInputString } from "../../util/helpers";
 
-const dataPath = path.join(__dirname, "data", "commandTestData.json");
-
-describe("CommandProcessor Integration Tests", () => {
+describe("CommandProcessor Unit Tests", () => {
   let table: Table;
   let robot: Robot;
   let commandProcessor: CommandProcessor;
   let messageSystem: MessageSystem;
-  let testData: TestDataType[];
 
-  // Initialize shared resources before each test
   beforeEach(() => {
     table = new Table(5, 5);
     robot = new Robot();
+    messageSystem = new MessageSystem();
     commandProcessor = new CommandProcessor(table, robot, messageSystem);
+
     jest.spyOn(process.stdout, "write").mockImplementation(() => true);
+    jest.spyOn(messageSystem, "enqueueMessage").mockImplementation(async (msg) => {
+      if (msg.type === "INFO") {
+        process.stdout.write(`Output: ${msg.message}\n`);
+      }
+    });
   });
 
-  beforeAll(async () => {
-    try {
-      const fileContents = await fs.promises.readFile(dataPath, "utf-8");
-      testData = JSON.parse(fileContents) as TestDataType[];
-    } catch (error) {
-      console.error(`Error reading test data: ${error}`);
-    }
-  });
-
-  // Clean up after each test
-  afterAll(() => {
+  afterEach(() => {
     jest.restoreAllMocks();
   });
 
-  // Define a single test to wrap dynamic assertions
-  test("Process commands and validate outputs", async () => {
-    // Ensure testData is loaded
-    expect(testData).toBeDefined();
-    expect(testData.length).toBeGreaterThan(0);
+  describe("process", () => {
+    it("should place the robot on the table", async () => {
+      await commandProcessor.process(
+        getCommandFromInputString("PLACE 0,0,NORTH")
+      );
+      expect(robot.getCoordinates()).toEqual({x: 0, y: 0});
+    });
 
-    // Iterate over each test case using for...of to ensure sequential processing
-    for (const { description, commands, expectedOutput } of testData) {
-      jest.clearAllMocks();
-      commandProcessor.resetSimulation();
+    it("should move the robot on the table", async () => {
+      await commandProcessor.process(
+        getCommandFromInputString("PLACE 0,0,NORTH")
+      );
+      await commandProcessor.process(getCommandFromInputString("MOVE"));
+      await commandProcessor.process(getCommandFromInputString("REPORT"));
 
-      process.stdout.write(`Running test case: ${description}`);
+      expect(process.stdout.write).toHaveBeenLastCalledWith(
+        "Output: 0,1,NORTH\n"
+      );
+    });
 
-      // Process commands sequentially
-      for (const command of commands) {
-        await commandProcessor.process(command);
-      }
+    it("should turn the robot left", async () => {
+      await commandProcessor.process(
+        getCommandFromInputString("PLACE 0,0,NORTH")
+      );
+      await commandProcessor.process(getCommandFromInputString("LEFT"));
+      await commandProcessor.process(getCommandFromInputString("REPORT"));
 
-      // Assert expected output
-      expect(process.stdout.write).toHaveBeenLastCalledWith(expectedOutput);
-    }
+      expect(process.stdout.write).toHaveBeenLastCalledWith(
+        "Output: 0,0,WEST\n"
+      );
+    });
+
+    it("should turn the robot right", async () => {
+      await commandProcessor.process(
+        getCommandFromInputString("PLACE 0,0,NORTH")
+      );
+      await commandProcessor.process(getCommandFromInputString("RIGHT"));
+      await commandProcessor.process(getCommandFromInputString("REPORT"));
+
+      expect(process.stdout.write).toHaveBeenLastCalledWith(
+        "Output: 0,0,EAST\n"
+      );
+    });
+
+    it("should report the robot position", async () => {
+      await commandProcessor.process(
+        getCommandFromInputString("PLACE 0,0,NORTH")
+      );
+      await commandProcessor.process(getCommandFromInputString("REPORT"));
+
+      await messageSystem.completeAllMessages();
+      expect(process.stdout.write).toHaveBeenLastCalledWith(
+        "Output: 0,0,NORTH\n"
+      );
+    });
+
+    it("should ignore invalid commands", async () => {
+      await commandProcessor.process(
+        getCommandFromInputString("PLACE 8,7,NORTH")
+      ); // invalid
+      await commandProcessor.process(
+        getCommandFromInputString("PLACE 3,4,NORTH")
+      ); // valid
+      await commandProcessor.process(getCommandFromInputString("BLORP")); // invalid
+      await commandProcessor.process(getCommandFromInputString("REPORT"));
+
+      expect(process.stdout.write).toHaveBeenLastCalledWith(
+        "Output: 3,4,NORTH\n"
+      );
+    });
   });
 });

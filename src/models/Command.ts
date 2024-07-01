@@ -5,7 +5,6 @@ import { Table } from '../models/Table';
 
 import type {
   PlacementType,
-  CardinalDirection,
   TurningDirection,
 } from "../types/Types";
 export interface Command {
@@ -41,7 +40,7 @@ export class TurnCommand implements Command {
 }
 
 export class ReportCommand implements Command {
-	execute(robot: Robot, table: Table): string | void {
+	execute(robot: Robot, table: Table): void {
 		robot.report();
 	}
 }

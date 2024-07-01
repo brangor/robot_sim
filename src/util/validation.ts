@@ -24,12 +24,13 @@ const CommandTypes: CommandType[] = [
 
 // Function to check if a number is an integer and optionally within a range
 export function isValidTableCoordinate(coordinate: Coordinate, maxWidth: number = Infinity, maxHeight: number = Infinity): boolean {
+	if (maxWidth < 0 || maxHeight < 0) return false;
+	if (coordinate === undefined || coordinate.x === undefined || coordinate.y === undefined) return false;
 
 	return (
-		(!!coordinate && !!coordinate.x && !!coordinate.y) &&
 		(Number.isInteger(coordinate.x) && Number.isInteger(coordinate.y)) &&
-		(coordinate.x! >= 0 && coordinate.x! < maxWidth) &&
-		(coordinate.y! >= 0 && coordinate.y! < maxHeight)
+		(coordinate.x >= 0 && coordinate.x < maxWidth) &&
+		(coordinate.y >= 0 && coordinate.y < maxHeight)
 	);
 }
 

@@ -25,7 +25,7 @@ export class MessageSystem {
       const message = this.messageQueue.shift();
       if (message) {
         if (message.type === "ERROR" || message.type === "DEBUG") {
-          //skip it for now
+          // Skip it for now but still remove from the queue
           continue;
         } else {
           await this.printMessage(message.message);
@@ -47,12 +47,22 @@ export class MessageSystem {
     });
   }
 
-  public reset(): void {
+  public async reset(): Promise<void> {
+    await this.completeAllMessages();
     this.messageQueue = [];
     this.processing = false;
   }
 
   public getAllOutputs(): MessageType[] {
     return [...this.messageQueue];
+  }
+
+  public async completeAllMessages(): Promise<void> {
+    while (this.messageQueue.length > 0) {
+      const message = this.messageQueue.shift();
+      if (message) {
+        await this.printMessage(message.message);
+      }
+    }
   }
 }

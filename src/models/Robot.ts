@@ -27,12 +27,19 @@ export class Robot {
   private messageQueue: MessageType[] = [];
 
   // Getter methods
-  public getPosition(): Coordinate {
+  public getCoordinates(): Coordinate {
     return this.coordinate;
   }
 
   public getFacing(): CardinalDirection | undefined {
     return this.facing;
+  }
+
+  public getPlacement(): PlacementType {
+    return {
+      coordinates: this.coordinate,
+      direction: this.facing,
+    };
   }
 
   public isOnTable(): boolean {
@@ -108,11 +115,13 @@ export class Robot {
 
     const nextMoveCoordinates = this.getMoveDestination();
     if (!isValidTableCoordinate(nextMoveCoordinates)) {
-      this.addMessage(createDebugMessage("Move ignored. Robot would fall off the table."));
+      this.addMessage(
+        createDebugMessage("Move ignored. Robot would fall off the table.")
+      );
       return;
     }
 
-    const message = `Robot moved to: ${this.coordinate.x},${this.coordinate.y}`
+    const message = `Robot moved to: ${this.coordinate.x},${this.coordinate.y}`;
     this.coordinate = nextMoveCoordinates;
 
     this.addMessage(createDebugMessage(message));

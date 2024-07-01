@@ -1,32 +1,30 @@
 // src/__tests__/unit/Command.test.ts
 
 import {
-  Command,
   PlaceCommand,
   MoveCommand,
   TurnCommand,
   ReportCommand,
-} from "../../commands/Command";
+} from "../../models/Command";
 import { Robot } from "../../models/Robot";
 import { Table } from "../../models/Table";
-import type { PlacementType } from "../../types/Types";
+import type { PlacementType, CardinalDirection, MessageType} from "../../types/Types";
+
+function getInfoMessages(messages: MessageType[]): string[] {
+  return messages.filter((message) => message.type === "INFO").map((message) => message.message);
+}
 
 describe("Commands", () => {
   let robot: Robot;
   let table: Table;
-  const commands: { [key: string]: Command } = {};
   const defaultPlacement: PlacementType = {
-    coordinates: {
-      x: 0,
-      y: 0,
-    },
-    direction: "NORTH",
+    coordinates: { x: 0, y: 0 },
+    direction: "NORTH" as CardinalDirection,
   };
 
   beforeEach(() => {
     robot = new Robot();
     table = new Table(5, 5);
-
     jest.spyOn(process.stdout, "write").mockImplementation(() => true);
   });
 
@@ -35,152 +33,166 @@ describe("Commands", () => {
   });
 
   describe("PlaceCommand", () => {
-    beforeEach(() => {
-      commands.place = new PlaceCommand(defaultPlacement);
+    it("should place the robot on the table", () => {
+      const placeCommand = new PlaceCommand(defaultPlacement);
+      placeCommand.execute(robot, table);
+
+      expect(robot.getPlacement()).toEqual(defaultPlacement);
     });
 
-    test("should place the robot on the table", () => {
-      commands.place.execute(robot, table);
-
-      expect(table.isValidPosition(robot.getPosition())).toBe(true);
-    });
-
-    test("should not place the robot outside the table", () => {
+    it("should not place the robot outside the table", () => {
       const outOfBoundsPlacement = {
         ...defaultPlacement,
-        coordinates: { x: table.getHeight() + 10, y: table.getWidth() + 10 },
+        coordinates: { x: 10, y: 10 },
       };
-      new PlaceCommand(outOfBoundsPlacement).execute(robot, table);
+      const placeCommand = new PlaceCommand(outOfBoundsPlacement);
+      placeCommand.execute(robot, table);
 
-      expect(table.isValidPosition(robot.getPosition())).toBe(false);
+      expect(robot.getPlacement()).toEqual({
+        coordinates: { x: undefined, y: undefined },
+        direction: undefined,
+      });
     });
 
-    test("should not place the robot facing an invalid direction", () => {
+    it("should not place the robot facing an invalid direction", () => {
       const invalidDirectionPlacement = {
         ...defaultPlacement,
+        // @ts-ignore
         direction: "INVALID_DIRECTION",
       };
       // @ts-ignore
-      new PlaceCommand(invalidDirectionPlacement).execute(robot, table);
+      const placeCommand = new PlaceCommand(invalidDirectionPlacement);
+      placeCommand.execute(robot, table);
 
-      expect(table.isValidPosition(robot.getPosition())).toBe(false);
+      expect(robot.getPlacement()).toEqual({
+        coordinates: { x: undefined, y: undefined },
+        direction: undefined,
+      });
     });
 
-    test("should not place the robot with invalid coordinates", () => {
+    it("should not place the robot with invalid coordinates", () => {
       const nonIntegerCoordinatePlacement = {
         ...defaultPlacement,
         coordinates: { x: Math.PI, y: Math.sqrt(2) },
       };
+      const placeCommand = new PlaceCommand(nonIntegerCoordinatePlacement);
+      placeCommand.execute(robot, table);
 
-      new PlaceCommand(nonIntegerCoordinatePlacement).execute(robot, table);
-
-      expect(table.isValidPosition(robot.getPosition())).toBe(false);
+      expect(robot.getPlacement()).toEqual({
+        coordinates: { x: undefined, y: undefined },
+        direction: undefined,
+      });
     });
   });
 
   describe("MoveCommand", () => {
+    let placeCommand: PlaceCommand;
+    let moveCommand: MoveCommand;
+    let reportCommand: ReportCommand;
+
     beforeEach(() => {
-      commands.move = new MoveCommand();
-      commands.report = new ReportCommand();
+      placeCommand = new PlaceCommand(defaultPlacement);
+      moveCommand = new MoveCommand();
+      reportCommand = new ReportCommand();
     });
 
-    test("should not move the robot before being placed", () => {
-      commands.move.execute(robot, table);
+    it("should not move the robot before being placed", () => {
+      moveCommand.execute(robot, table);
 
-      expect(process.stdout.write).not.toHaveBeenCalled();
+      const messages = getInfoMessages(robot.dumpMessageQueue());
+      expect(messages).toEqual([]);
     });
 
     describe("after being placed", () => {
       beforeEach(() => {
-        commands.place.execute(robot, table);
+        placeCommand.execute(robot, table);
       });
 
-      test("should move the robot on the table", () => {
-        commands.move.execute(robot, table);
-        commands.report.execute(robot, table);
-        expect(process.stdout.write).toHaveBeenLastCalledWith(
-          "Output: 0,1,NORTH\n"
-        );
+      it("should move the robot on the table", () => {
+        moveCommand.execute(robot, table);
+        reportCommand.execute(robot, table);
+
+        const messages = getInfoMessages(robot.dumpMessageQueue());
+        expect(messages).toEqual(["0,1,NORTH"]);
       });
 
-      test("should not move the robot outside the table", () => {
-        commands.report.execute(robot, table);
-        expect(process.stdout.write).toHaveBeenLastCalledWith(
-          "Output: 0,0,NORTH\n"
-        );
+      it("should not move the robot outside the table", () => {
+        for (let i = 0; i < 5; i++) {
+          moveCommand.execute(robot, table);
+        }
+        reportCommand.execute(robot, table);
 
-        commands.move.execute(robot, table);
-        commands.move.execute(robot, table);
-        commands.move.execute(robot, table);
-        commands.move.execute(robot, table);
-        commands.report.execute(robot, table);
-        expect(process.stdout.write).toHaveBeenLastCalledWith(
-          "Output: 0,4,NORTH\n"
-        );
-
-        commands.move.execute(robot, table);
-        commands.report.execute(robot, table);
-        expect(process.stdout.write).toHaveBeenLastCalledWith(
-          "Output: 0,4,NORTH\n"
-        );
+        const messages = getInfoMessages(robot.dumpMessageQueue());
+        expect(messages).toEqual(["0,4,NORTH"]);
       });
     });
   });
 
   describe("TurnCommand", () => {
+    let placeCommand: PlaceCommand;
+    let turnLeftCommand: TurnCommand;
+    let turnRightCommand: TurnCommand;
+    let reportCommand: ReportCommand;
+
     beforeEach(() => {
-      commands.right = new TurnCommand("RIGHT");
-      commands.left = new TurnCommand("LEFT");
+      placeCommand = new PlaceCommand(defaultPlacement);
+      turnLeftCommand = new TurnCommand("LEFT");
+      turnRightCommand = new TurnCommand("RIGHT");
+      reportCommand = new ReportCommand();
     });
 
-    test("should not turn the robot before being placed", () => {
-      commands.right.execute(robot, table);
+    it("should not turn the robot before being placed", () => {
+      turnRightCommand.execute(robot, table);
 
-      expect(process.stdout.write).not.toHaveBeenCalled();
+      const messages = getInfoMessages(robot.dumpMessageQueue());
+      expect(messages).toEqual([]);
     });
 
     describe("after being placed", () => {
       beforeEach(() => {
-        commands.place.execute(robot, table);
+        placeCommand.execute(robot, table);
       });
 
-      test("should turn the robot left", () => {
-        commands.left.execute(robot, table);
+      it("should turn the robot left", () => {
+        turnLeftCommand.execute(robot, table);
+        reportCommand.execute(robot, table);
 
-        commands.report.execute(robot, table);
-        expect(process.stdout.write).toHaveBeenLastCalledWith(
-          "Output: 0,0,WEST\n"
-        );
+        const messages = getInfoMessages(robot.dumpMessageQueue());
+        expect(messages).toEqual(["0,0,WEST"]);
       });
 
-      test("should turn the robot right", () => {
-        commands.right.execute(robot, table);
+      it("should turn the robot right", () => {
+        turnRightCommand.execute(robot, table);
+        reportCommand.execute(robot, table);
 
-        commands.report.execute(robot, table);
-        expect(process.stdout.write).toHaveBeenLastCalledWith(
-          "Output: 0,0,EAST\n"
-        );
+        const messages = getInfoMessages(robot.dumpMessageQueue());
+        expect(messages).toEqual(["0,0,EAST"]);
       });
     });
   });
 
   describe("ReportCommand", () => {
+    let placeCommand: PlaceCommand;
+    let reportCommand: ReportCommand;
+
     beforeEach(() => {
-      commands.report = new ReportCommand();
+      placeCommand = new PlaceCommand(defaultPlacement);
+      reportCommand = new ReportCommand();
     });
 
-    test("should not report the robot before being placed", () => {
-      commands.report.execute(robot, table);
+    it("should not report the robot before being placed", () => {
+      reportCommand.execute(robot, table);
 
-      expect(process.stdout.write).not.toHaveBeenCalled();
+      const messages = getInfoMessages(robot.dumpMessageQueue());
+      expect(messages).toEqual([]);
     });
 
-    test("should report the robot position", () => {
-      commands.place.execute(robot, table);
-      commands.report.execute(robot, table);
-      expect(process.stdout.write).toHaveBeenLastCalledWith(
-        "Output: 0,0,NORTH\n"
-      );
+    it("should report the robot position", () => {
+      placeCommand.execute(robot, table);
+      reportCommand.execute(robot, table);
+
+      const messages = getInfoMessages(robot.dumpMessageQueue());
+      expect(messages).toEqual(["0,0,NORTH"]);
     });
   });
 });
