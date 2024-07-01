@@ -33,7 +33,7 @@ describe('Robot', () => {
 	test('should be placeable', () => {
 		robot.place({ x: 2, y: 2 }, "NORTH");
 
-		expect(robot.hasValidPosition()).toBe(true);			expect(table.isValidPosition(robot.getPosition())).toBe(true);
+		expect(table.isValidPosition(robot.getPosition())).toBe(true);
 		expect(robot.report()).toBe("2,2,NORTH");
 	});
 

@@ -1,57 +1,58 @@
 // src/services/CommandProcessor.ts
 
-import { Command, PlaceCommand, MoveCommand, TurnCommand, ReportCommand } from "../models/Command";
+import {
+  Command,
+  PlaceCommand,
+  MoveCommand,
+  TurnCommand,
+  ReportCommand,
+} from "../models/Command";
 import { Robot } from "../models/Robot";
 import { Table } from "../models/Table";
-import { isValidCardinalDirection } from "../util/validation";
+import { getPlacementFromArg } from "../util/helpers";
+import { MessageSystem } from "./MessageSystem";
+import { createInfoMessage, createDebugMessage, createErrorMessage } from "../util/message";
 
-import type {
-  Coordinate,
-  CardinalDirection,
-  TurningDirection
-} from "../types/Types";
+import type { CommandInputType, TurningDirection, MessageType } from "../types/Types";
+
 export class CommandProcessor {
   private robot: Robot;
   private table: Table;
-  private commandInputQueue: string[] = [];
+  private messageSystem: MessageSystem;
+  private commandInputQueue: CommandInputType[] = [];
 
-  constructor(table: Table, robot: Robot) {
+  constructor(table: Table, robot: Robot, messageSystem: MessageSystem) {
     this.robot = robot;
     this.table = table;
+    this.messageSystem = messageSystem;
   }
 
-  process(commandInputString: string): void {
-    this.commandInputQueue.push(commandInputString);
+  async process(commandInput: CommandInputType): Promise<void> {
+    this.commandInputQueue.push(commandInput);
     if (this.commandInputQueue.length === 1) {
-      this.processNextCommand();
+      await this.processNextCommand();
     }
   }
 
-  private processNextCommand(): void {
+  private async processNextCommand(): Promise<void> {
     if (this.commandInputQueue.length === 0) return;
 
-    const commandInputString = this.commandInputQueue.shift();
-    if (!commandInputString) return;
+    const nextCommand = this.commandInputQueue.shift();
+    if (!nextCommand) return;
 
-    const parts = commandInputString.trim().split(" ");
-    const commandType = parts[0];
+    const type = nextCommand.command;
+    let command: Command | undefined;
 
-    let command: Command | null = null;
-
-    switch (commandType) {
+    switch (type) {
       case "PLACE":
-        if (parts.length === 2) {
-          const [x, y, direction] = parts[1].split(",");
-          if (
-            this.isValidInteger(x) && this.isValidInteger(y) &&
-            isValidCardinalDirection(direction)
-          ) {
-            command = new PlaceCommand(
-              { x: parseInt(x), y: parseInt(y) } as Coordinate,
-              direction as CardinalDirection
-            );
-          }
+        if (!nextCommand.arg) {
+          await this.messageSystem.enqueueMessage(
+            createDebugMessage("Invalid PLACE command. Ignoring...")
+          );
+          break;
         }
+
+        command = new PlaceCommand(getPlacementFromArg(nextCommand.arg));
         break;
       case "MOVE":
         command = new MoveCommand();
@@ -71,14 +72,27 @@ export class CommandProcessor {
       command.execute(this.robot, this.table);
     }
 
-    setTimeout(() => this.processNextCommand(), 100);
+    const messages = this.robot.dumpMessageQueue();
+
+    if (messages.length > 0) {
+      for (const message of messages) {
+        await this.messageSystem.enqueueMessage(message);
+      }
+    }
+
+    await this.processNextCommand();
+  }
+
+  public getLatestOutput(): MessageType | undefined {
+    return this.messageSystem.getAllOutputs().pop();
+  }
+
+  public getAllOutputs(): MessageType[] {
+    return this.messageSystem.getAllOutputs();
   }
 
   public resetSimulation(): void {
-    this.robot.removeFromTable();
-  }
-
-  private isValidInteger(s: string): boolean {
-    return !isNaN(parseInt(s));
+    this.robot.reset();
+    this.messageSystem.reset();
   }
 }

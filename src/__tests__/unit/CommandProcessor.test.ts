@@ -1,21 +1,23 @@
 // src/__tests__/unit/CommandProcessor.test.ts
 
 import { CommandProcessor } from '../../services/CommandProcessor';
+import { MessageSystem } from '../../services/MessageSystem';
 import { Robot } from '../../models/Robot';
 import { Table } from '../../models/Table';
-
+import { getCommandFromInputString } from '../../util/helpers';
 
 describe('CommandProcessor Unit Tests', () => {
 	let table: Table;
 	let robot: Robot;
 	let commandProcessor: CommandProcessor;
+	let messageSystem: MessageSystem;
 
 	beforeEach(() => {
 		table = new Table(5, 5);
 		robot = new Robot();
-		commandProcessor = new CommandProcessor(table, robot);
+		commandProcessor = new CommandProcessor(table, robot, messageSystem);
 
-		jest.spyOn(console, 'log').mockImplementation(() => {});
+    jest.spyOn(process.stdout, "write").mockImplementation(() => true);
 	});
 
 	afterEach(() => {
@@ -24,47 +26,47 @@ describe('CommandProcessor Unit Tests', () => {
 
 	describe('process', () => {
 		it('should place the robot on the table', () => {
-			commandProcessor.process('PLACE 0,0,NORTH');
-			expect(robot.hasValidPosition()).toBe(true);			expect(table.isValidPosition(robot.getPosition())).toBe(true);
+			commandProcessor.process(getCommandFromInputString('PLACE 0,0,NORTH'));
+			expect(table.isValidPosition(robot.getPosition())).toBe(true);
 		});
 
 		it('should move the robot on the table', () => {
-			commandProcessor.process('PLACE 0,0,NORTH');
-			commandProcessor.process('MOVE');
+			commandProcessor.process(getCommandFromInputString('PLACE 0,0,NORTH'));
+			commandProcessor.process(getCommandFromInputString('MOVE'));
 
-			commandProcessor.process('REPORT');
-			expect(console.log).toHaveBeenLastCalledWith('Output: 0,1,NORTH');
+			commandProcessor.process(getCommandFromInputString('REPORT'));
+			expect(process.stdout.write).toHaveBeenLastCalledWith('Output: 0,1,NORTH');
 		});
 
 		it('should turn the robot left', () => {
-			commandProcessor.process('PLACE 0,0,NORTH');
-			commandProcessor.process('LEFT');
+			commandProcessor.process(getCommandFromInputString('PLACE 0,0,NORTH'));
+			commandProcessor.process(getCommandFromInputString('LEFT'));
 
-			commandProcessor.process('REPORT');
-			expect(console.log).toHaveBeenLastCalledWith('Output: 0,0,WEST');
+			commandProcessor.process(getCommandFromInputString('REPORT'));
+			expect(process.stdout.write).toHaveBeenLastCalledWith('Output: 0,0,WEST');
 		});
 
 		it('should turn the robot right', () => {
-			commandProcessor.process('PLACE 0,0,NORTH');
-			commandProcessor.process('RIGHT');
+			commandProcessor.process(getCommandFromInputString('PLACE 0,0,NORTH'));
+			commandProcessor.process(getCommandFromInputString('RIGHT'));
 
-			commandProcessor.process('REPORT');
-			expect(console.log).toHaveBeenLastCalledWith('Output: 0,0,EAST');
+			commandProcessor.process(getCommandFromInputString('REPORT'));
+			expect(process.stdout.write).toHaveBeenLastCalledWith('Output: 0,0,EAST');
 		});
 
 		it('should report the robot position', () => {
-			commandProcessor.process('PLACE 0,0,NORTH');
+			commandProcessor.process(getCommandFromInputString('PLACE 0,0,NORTH'));
 
-			commandProcessor.process('REPORT');
-			expect(console.log).toHaveBeenLastCalledWith("Output: 0,0,NORTH");
+			commandProcessor.process(getCommandFromInputString('REPORT'));
+			expect(process.stdout.write).toHaveBeenLastCalledWith("Output: 0,0,NORTH");
 		});
 
 		it('should ignore invalid commands', () => {
-			commandProcessor.process('PLACE 8,7,NORTH'); // invalid
-			commandProcessor.process('PLACE 3,4,NORTH'); // valid
-			commandProcessor.process('BLORP'); // invalid
-			commandProcessor.process('REPORT');
-			expect(console.log).toHaveBeenLastCalledWith("Output: 3,4,NORTH");
+			commandProcessor.process(getCommandFromInputString('PLACE 8,7,NORTH')); // inval)id
+			commandProcessor.process(getCommandFromInputString('PLACE 3,4,NORTH')); // val)id
+			commandProcessor.process(getCommandFromInputString('BLORP')); // inval)id
+			commandProcessor.process(getCommandFromInputString('REPORT'));
+			expect(process.stdout.write).toHaveBeenLastCalledWith("Output: 3,4,NORTH");
 		});
 	});
 });

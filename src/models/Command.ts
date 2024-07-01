@@ -3,29 +3,30 @@
 import { Robot } from '../models/Robot';
 import { Table } from '../models/Table';
 
-import type { Coordinate, CardinalDirection, TurningDirection } from '../types/Types';
-import { isValidTableCoordinate, isValidCardinalDirection, isValidTurningDirection } from '../util/validation';
+import type {
+  PlacementType,
+  CardinalDirection,
+  TurningDirection,
+} from "../types/Types";
 export interface Command {
 	execute(robot: Robot, table: Table): void;
 }
 
 export class PlaceCommand implements Command {
   constructor(
-    private coordinate: Coordinate,
-    private direction: CardinalDirection
+    private placement: PlacementType
   ) {}
 
   execute(robot: Robot, table: Table): void {
-		if (table.isValidPosition(this.coordinate)) {
-			robot.place(this.coordinate, this.direction);
-		}
+		if (table.isValidPosition(this.placement.coordinates)) {
+      robot.place(this.placement);
+    }
   }
 }
 
 export class MoveCommand implements Command {
   execute(robot: Robot, table: Table): void {
-		const nextMoveCoordinates = robot.calculateNextMoveCoordinates();
-    if (table.isValidPosition(nextMoveCoordinates)) {
+    if (table.isValidPosition(robot.getMoveDestination())) {
       robot.move();
     }
   }
@@ -40,11 +41,7 @@ export class TurnCommand implements Command {
 }
 
 export class ReportCommand implements Command {
-	execute(robot: Robot, table: Table): void {
-		const output = robot.report();
-
-		if (output) {
-			console.log(`Output: ${output}`);
-		}
+	execute(robot: Robot, table: Table): string | void {
+		robot.report();
 	}
 }

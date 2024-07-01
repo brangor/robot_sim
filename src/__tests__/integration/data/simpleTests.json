@@ -1,0 +1,27 @@
+[
+	{
+		"description": "PLACE and REPORT",
+		"commands": ["PLACE", "REPORT"],
+		"expectedOutput": "0,0,NORTH"
+	},
+	{
+		"description": "PLACE, MOVE, and REPORT",
+		"commands": ["PLACE 0,0,NORTH", "MOVE", "REPORT"],
+		"expectedOutput": "0,1,NORTH"
+	},
+	{
+		"description": "PLACE, LEFT, and REPORT",
+		"commands": ["PLACE 0,0,NORTH", "LEFT", "REPORT"],
+		"expectedOutput": "0,0,WEST"
+	},
+	{
+		"description": "PLACE, RIGHT, and REPORT",
+		"commands": ["PLACE 0,0,NORTH", "RIGHT", "REPORT"],
+		"expectedOutput": "0,0,EAST"
+	},
+	{
+		"description": "REPORT",
+		"commands": ["REPORT"],
+		"expectedOutput": ""
+	}
+]

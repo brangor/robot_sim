@@ -1,7 +1,9 @@
-// Attempt to import JSON data directly if supported
+// src/__tests__/integration/CommandProcessor.test.ts
+
 import path from "path";
 import fs from "fs";
 import { CommandProcessor } from "../../services/CommandProcessor";
+import { MessageSystem } from "../../services/MessageSystem";
 import { Robot } from "../../models/Robot";
 import { Table } from "../../models/Table";
 import { TestDataType } from "../../types/Types";
@@ -12,14 +14,15 @@ describe("CommandProcessor Integration Tests", () => {
   let table: Table;
   let robot: Robot;
   let commandProcessor: CommandProcessor;
+  let messageSystem: MessageSystem;
   let testData: TestDataType[];
 
   // Initialize shared resources before each test
   beforeEach(() => {
     table = new Table(5, 5);
     robot = new Robot();
-    commandProcessor = new CommandProcessor(table, robot);
-    jest.spyOn(console, "log").mockImplementation(() => {});
+    commandProcessor = new CommandProcessor(table, robot, messageSystem);
+    jest.spyOn(process.stdout, "write").mockImplementation(() => true);
   });
 
   beforeAll(async () => {
@@ -47,7 +50,7 @@ describe("CommandProcessor Integration Tests", () => {
       jest.clearAllMocks();
       commandProcessor.resetSimulation();
 
-      console.log(`Running test case: ${description}`);
+      process.stdout.write(`Running test case: ${description}`);
 
       // Process commands sequentially
       for (const command of commands) {
@@ -55,7 +58,7 @@ describe("CommandProcessor Integration Tests", () => {
       }
 
       // Assert expected output
-      expect(console.log).toHaveBeenLastCalledWith(expectedOutput);
+      expect(process.stdout.write).toHaveBeenLastCalledWith(expectedOutput);
     }
   });
 });
