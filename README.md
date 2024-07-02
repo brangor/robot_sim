@@ -1,4 +1,4 @@
-# SEEK PASS ROBOT CHALLENGE
+# ROBOT SIMULATOR
 
 ## Installation
 
