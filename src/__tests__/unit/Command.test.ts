@@ -21,11 +21,6 @@ describe("Commands", () => {
   beforeEach(() => {
     robot = new Robot();
     table = new Table(5, 5);
-    jest.spyOn(process.stdout, "write").mockImplementation(() => true);
-  });
-
-  afterEach(() => {
-    jest.restoreAllMocks();
   });
 
   describe("PlaceCommand", () => {
