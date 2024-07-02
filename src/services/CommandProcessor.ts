@@ -9,22 +9,17 @@ import {
 } from "../models/Command";
 import { Robot } from "../models/Robot";
 import { Table } from "../models/Table";
-import { getPlacementFromArg } from "../util/helpers";
 import { MessageSystem } from "./MessageSystem";
-import { createInfoMessage } from "../util/message";
-import { printHelp, printEndSession } from "../util/IO";
 
 import type {
   CommandInput,
-  TurningDirection,
-  Message,
+  TurningDirection
 } from "../types/Types";
 
 export class CommandProcessor {
   private robot: Robot;
   private table: Table;
   private messageSystem: MessageSystem;
-  private commandInputQueue: CommandInput[] = [];
 
   constructor(table: Table, robot: Robot, messageSystem: MessageSystem) {
     this.robot = robot;

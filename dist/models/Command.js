@@ -27,7 +27,6 @@ class TurnCommand {
     constructor(turnDirection) {
         this.turnDirection = turnDirection;
     }
-    ;
     execute(robot, table) {
         if ((0, validation_1.isValidTurningDirection)(this.turnDirection)) {
             robot.turn(this.turnDirection);

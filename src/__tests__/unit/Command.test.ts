@@ -8,7 +8,7 @@ import {
 } from "../../models/Command";
 import { Robot } from "../../models/Robot";
 import { Table } from "../../models/Table";
-import type { Placement, CardinalDirection, Message} from "../../types/Types";
+import type { Placement, CardinalDirection } from "../../types/Types";
 
 describe("Commands", () => {
   let robot: Robot;

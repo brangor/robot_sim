@@ -10,7 +10,7 @@ const execAsync = util.promisify(exec);
 
 describe("Robot Simulation", () => {
   let testData: CommandInputList[];
-  const dataPath = path.join(__dirname, "data", "commandTestData.json");
+  const dataPath = path.join(__dirname, "../data", "sampleTests.json");
 
   beforeAll(async () => {
     try {
@@ -22,27 +22,16 @@ describe("Robot Simulation", () => {
   });
 
   test("Process commands and validate outputs", async () => {
-    // Ensure testData is loaded
     expect(testData).toBeDefined();
     expect(testData.length).toBeGreaterThan(0);
 
-    // Create a temporary test data file
-    const tempTestDataPath = path.join(__dirname, "tempTestData.json");
-    await fs.promises.writeFile(
-      tempTestDataPath,
-      JSON.stringify(testData, null, 2)
-    );
-
     try {
-      const { stdout, stderr } = await execAsync(
-        `node ./dist/index.js ${tempTestDataPath}`
-      );
+      const { stdout, stderr } = await execAsync(`npm start -- ${dataPath}`);
 
       if (stderr) {
         console.log(`Standard error: ${stderr}`);
       }
 
-      // Process standard output and validate
       const lines = stdout.trim().split("\n");
       const lastLine = lines[lines.length - 1];
       expect(lastLine).toBe(
@@ -50,10 +39,7 @@ describe("Robot Simulation", () => {
       );
     } catch (error) {
       console.error(`Error executing test: ${error}`);
-      throw error; // Ensure the test fails if there is an error
-    } finally {
-      // Clean up the temporary file
-      await fs.promises.unlink(tempTestDataPath);
+      throw error;
     }
   });
 });

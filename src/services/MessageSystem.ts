@@ -1,7 +1,6 @@
 // src/services/MessageSystem.ts
 
 import { Writable } from "stream";
-import type { Message } from "../types/Types";
 
 export class MessageSystem {
   private messageQueue: string[] = [];
@@ -32,10 +31,6 @@ export class MessageSystem {
         await this.printMessage(message);
       }
     }
-  }
-
-  public async processingComplete(): Promise<void> {
-    await this.processMessages();
   }
 
   private async printMessage(message: string): Promise<void> {

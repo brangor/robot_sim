@@ -1,7 +1,6 @@
 // src/__tests__/unit/Robot.test.ts
 
 import { Robot } from "../../models/Robot";
-import { Table } from "../../models/Table";
 
 function getLastMessage(robot: Robot): string | undefined {
 	const messages = robot.dumpMessageQueue();
@@ -12,12 +11,10 @@ function getLastMessage(robot: Robot): string | undefined {
 }
 
 describe('Robot', () => {
-  let table: Table;
 	let robot: Robot;
 
   beforeEach(() => {
 		robot = new Robot();
-    table = new Table(5, 5);
   });
 
 	test("should not be able to move before being placed", () => {

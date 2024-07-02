@@ -5,7 +5,6 @@ exports.CommandProcessor = void 0;
 const Command_1 = require("../models/Command");
 class CommandProcessor {
     constructor(table, robot, messageSystem) {
-        this.commandInputQueue = [];
         this.robot = robot;
         this.table = table;
         this.messageSystem = messageSystem;

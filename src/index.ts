@@ -12,8 +12,6 @@ import {
   printUnknownFatalError,
   printStartSession,
   printStartTestGroup,
-  printEndTestGroup,
-  printEndSession,
   printEndTestSession,
   printHelp,
   printInvalidCommandMessage,
@@ -85,12 +83,13 @@ async function main() {
         }
 
         await processCommands([command], commandProcessor);
+        await printInputPrompt();
       } else {
         printInvalidCommandMessage();
       }
-      await printStartSession(...tableDimensions);
-      await printInputPrompt();
+
     });
+    await printStartSession(...tableDimensions);
   }
 }
 

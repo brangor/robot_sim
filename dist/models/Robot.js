@@ -4,24 +4,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Robot = void 0;
 const helpers_1 = require("../util/helpers");
 const lookups_1 = require("../util/lookups");
-const TurningLookup = {
-    NORTH: {
-        LEFT: "WEST",
-        RIGHT: "EAST",
-    },
-    EAST: {
-        LEFT: "NORTH",
-        RIGHT: "SOUTH",
-    },
-    SOUTH: {
-        LEFT: "EAST",
-        RIGHT: "WEST",
-    },
-    WEST: {
-        LEFT: "SOUTH",
-        RIGHT: "NORTH",
-    },
-};
 class Robot {
     constructor() {
         this.coordinates = undefined;
@@ -76,7 +58,7 @@ class Robot {
     turn(turnDirection) {
         if (!this.hasValidPosition())
             return;
-        this.facing = TurningLookup[this.facing][turnDirection];
+        this.facing = lookups_1.TurningLookup[this.facing][turnDirection];
     }
     // Message queue methods
     dumpMessageQueue() {

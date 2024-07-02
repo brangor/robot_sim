@@ -7,28 +7,7 @@ import type {
   Placement
 } from "../types/Types";
 import { addCoordinates } from "../util/helpers";
-import { MoveOffsetLookup } from "../util/lookups";
-
-const TurningLookup: {
-  [key in CardinalDirection]: { [key in TurningDirection]: CardinalDirection };
-} = {
-  NORTH: {
-    LEFT: "WEST",
-    RIGHT: "EAST",
-  },
-  EAST: {
-    LEFT: "NORTH",
-    RIGHT: "SOUTH",
-  },
-  SOUTH: {
-    LEFT: "EAST",
-    RIGHT: "WEST",
-  },
-  WEST: {
-    LEFT: "SOUTH",
-    RIGHT: "NORTH",
-  },
-};
+import { MoveOffsetLookup, TurningLookup } from "../util/lookups";
 
 export class Robot {
   private coordinates: Coordinates | undefined = undefined;

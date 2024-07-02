@@ -5,43 +5,36 @@ exports.isValidCardinalDirection = isValidCardinalDirection;
 exports.isValidTurningDirection = isValidTurningDirection;
 exports.areValidCoordinates = areValidCoordinates;
 exports.isValidCommandString = isValidCommandString;
-exports.isValidTestData = isValidTestData;
-const CardinalDirections = [
-    "NORTH",
-    "EAST",
-    "SOUTH",
-    "WEST",
-];
-const TurningDirections = ["LEFT", "RIGHT"];
-const CommandTypes = [
-    "PLACE",
-    "MOVE",
-    "LEFT",
-    "RIGHT",
-    "REPORT",
-    "EXIT",
-    "HELP"
-];
 function isValidCardinalDirection(direction) {
+    const CardinalDirections = [
+        "NORTH",
+        "EAST",
+        "SOUTH",
+        "WEST",
+    ];
     return CardinalDirections.includes(direction);
 }
 function isValidTurningDirection(direction) {
+    const TurningDirections = ["LEFT", "RIGHT"];
     return TurningDirections.includes(direction);
 }
 function isValidCommandType(command) {
+    const CommandTypes = [
+        "PLACE",
+        "MOVE",
+        "LEFT",
+        "RIGHT",
+        "REPORT",
+        "EXIT",
+        "HELP",
+    ];
     return CommandTypes.includes(command);
 }
-function isValidInteger(value) {
-    if (typeof value === "number")
-        return Number.isInteger(value);
-    return Number.isInteger(parseInt(value));
-}
-;
 function areValidCoordinates(coordinates) {
     return (coordinates.x !== undefined &&
         coordinates.y !== undefined &&
-        isValidInteger(coordinates.x) &&
-        isValidInteger(coordinates.y) &&
+        Number.isInteger(coordinates.x) &&
+        Number.isInteger(coordinates.y) &&
         coordinates.x >= 0 &&
         coordinates.y >= 0);
 }
@@ -75,13 +68,3 @@ function isValidCommandString(value) {
         return parts[0] === "PLACE" && isValidPlacementString(parts[1]);
     return false;
 }
-function isValidTestData(data) {
-    if (!Array.isArray(data))
-        return false;
-    return data.every((testCase) => {
-        if (!testCase.description || !testCase.commands)
-            return false;
-        return testCase.commands.every((command) => isValidCommandString(command.raw));
-    });
-}
-;

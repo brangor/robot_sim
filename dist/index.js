@@ -16,7 +16,6 @@ const messageSystem = new MessageSystem_1.MessageSystem();
 const commandProcessor = new CommandProcessor_1.CommandProcessor(table, robot, messageSystem);
 async function main() {
     const args = process.argv.slice(2);
-    await (0, IO_1.printStartSession)(...tableDimensions);
     if (args.length > 0) {
         let path;
         let commandInputList;
@@ -68,12 +67,13 @@ async function main() {
                     (0, IO_1.printHelp)();
                 }
                 await (0, programFlow_1.processCommands)([command], commandProcessor);
+                await (0, IO_1.printInputPrompt)();
             }
             else {
                 (0, IO_1.printInvalidCommandMessage)();
             }
-            await (0, IO_1.printInputPrompt)();
         });
+        await (0, IO_1.printStartSession)(...tableDimensions);
     }
 }
 main();

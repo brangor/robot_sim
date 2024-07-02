@@ -26,10 +26,3 @@ export type Placement = {
   direction: CardinalDirection;
 };
 
-export type Message = {
-  kind: MessageKind;
-  message: string;
-  timestamp: number;
-};
-
-export type MessageKind = "INFO" | "ERROR" | "DEBUG";

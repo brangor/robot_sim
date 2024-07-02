@@ -30,13 +30,12 @@ export class MoveCommand implements Command {
 }
 
 export class TurnCommand implements Command {
-	constructor(private turnDirection: TurningDirection) {};
-
-	execute(robot: Robot, table: Table): void {
+  constructor(private turnDirection: TurningDirection) {}
+  execute(robot: Robot, table: Table): void {
     if (isValidTurningDirection(this.turnDirection)) {
       robot.turn(this.turnDirection);
     }
-	}
+  }
 }
 
 export class ReportCommand implements Command {

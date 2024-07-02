@@ -17,9 +17,7 @@ function reviver(key: string, value: any): any {
       const commands = value.commands
         .map((commandString: string) => {
           const command = getCommandFromInputString(commandString);
-          if (!command) {
-            console.error(`Invalid command format: ${commandString}`);
-          }
+          if (!command) return;
           return command;
         })
         .filter(Boolean); // Filter out any undefined values

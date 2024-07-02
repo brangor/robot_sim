@@ -2,7 +2,6 @@
 // src/__tests__/unit/Robot.test.ts
 Object.defineProperty(exports, "__esModule", { value: true });
 const Robot_1 = require("../../models/Robot");
-const Table_1 = require("../../models/Table");
 function getLastMessage(robot) {
     const messages = robot.dumpMessageQueue();
     if (messages.length === 0) {
@@ -11,11 +10,9 @@ function getLastMessage(robot) {
     return messages[messages.length - 1];
 }
 describe('Robot', () => {
-    let table;
     let robot;
     beforeEach(() => {
         robot = new Robot_1.Robot();
-        table = new Table_1.Table(5, 5);
     });
     test("should not be able to move before being placed", () => {
         robot.move();

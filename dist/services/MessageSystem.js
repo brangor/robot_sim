@@ -27,9 +27,6 @@ class MessageSystem {
             }
         }
     }
-    async processingComplete() {
-        await this.processMessages();
-    }
     async printMessage(message) {
         return new Promise((resolve, reject) => {
             this.writableStream.write(`${message}`, (err) => {
