@@ -1,9 +1,7 @@
 import type { Config } from "jest";
 
 const config: Config = {
-  transform: {
-    "^.+\\.ts$": "@swc/jest",
-  },
+  preset: "ts-jest",
   testEnvironment: "node",
   roots: ["<rootDir>/src"],
 };
