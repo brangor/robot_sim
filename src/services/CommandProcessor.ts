@@ -11,10 +11,7 @@ import { Robot } from "../models/Robot";
 import { Table } from "../models/Table";
 import { MessageSystem } from "./MessageSystem";
 
-import type {
-  CommandInput,
-  TurningDirection
-} from "../types/Types";
+import type { CommandInput, TurningDirection } from "../types/Types";
 
 export class CommandProcessor {
   private robot: Robot;

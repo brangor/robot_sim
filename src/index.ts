@@ -56,7 +56,7 @@ async function main() {
         commandProcessor.resetSimulation();
         await printStartTestGroup(commandInput.description);
         for (const command of commandInput.commands) {
-          printInputPrompt(command.raw);
+          printInputPrompt(command.raw + "\n");
           await commandProcessor.process(command);
         }
         const lastSentMessage = messageSystem.getLatestSentMessage();
