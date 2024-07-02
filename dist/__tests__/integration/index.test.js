@@ -22,7 +22,6 @@ describe("Robot Simulation", () => {
         }
     });
     test("Process commands and validate outputs", async () => {
-        // Ensure testData is loaded
         expect(testData).toBeDefined();
         expect(testData.length).toBeGreaterThan(0);
         try {
@@ -30,14 +29,13 @@ describe("Robot Simulation", () => {
             if (stderr) {
                 console.log(`Standard error: ${stderr}`);
             }
-            // Process standard output and validate
             const lines = stdout.trim().split("\n");
             const lastLine = lines[lines.length - 1];
             expect(lastLine).toBe(`${testData.length} out of ${testData.length} test cases successful.`);
         }
         catch (error) {
             console.error(`Error executing test: ${error}`);
-            throw error; // Ensure the test fails if there is an error
+            throw error;
         }
     });
 });

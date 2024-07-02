@@ -1,7 +1,7 @@
 // src/models/Robot.ts
 
 import type {
-  Coordinates as Coordinates,
+  Coordinates,
   CardinalDirection,
   TurningDirection,
   Placement

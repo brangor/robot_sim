@@ -1,9 +1,9 @@
 "use strict";
 // src/util/IO.ts
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.sendMessage = sendMessage;
 exports.printStartSession = printStartSession;
 exports.printEndSession = printEndSession;
+exports.printEndTest = printEndTest;
 exports.printEndTestSession = printEndTestSession;
 exports.printStartTestGroup = printStartTestGroup;
 exports.printEndTestGroup = printEndTestGroup;
@@ -15,36 +15,44 @@ exports.printFatalError = printFatalError;
 exports.printUnknownFatalError = printUnknownFatalError;
 const MessageSystem_1 = require("../services/MessageSystem");
 const messageSystem = new MessageSystem_1.MessageSystem();
-async function printDivider() {
-    await sendMessage("-".repeat(40) + "\n");
-}
+const DIVIDER = "-".repeat(40) + "\n";
 async function sendMessage(message) {
-    messageSystem.enqueueMessage(message);
+    await messageSystem.enqueueMessage(message);
 }
+async function printMessages(messages) {
+    await Promise.all(messages.map(sendMessage));
+}
+// Session related functions
 async function printStartSession(tableHeight, tableWidth) {
     console.clear();
-    await sendMessage("Robot simulation started.\n");
-    await printDivider();
-    await sendMessage(`Table dimensions: ${tableHeight} x ${tableWidth}\n`);
-    await sendMessage("Type 'EXIT' to quit, and 'HELP' for commands.\n");
-    await printDivider();
+    await printMessages([
+        "Robot simulation started.\n",
+        DIVIDER,
+        `Table dimensions: ${tableHeight} x ${tableWidth}\n`,
+        "Type 'EXIT' to quit, and 'HELP' for commands.\n",
+        DIVIDER,
+    ]);
     await printInputPrompt();
 }
 async function printEndSession() {
-    await sendMessage("Robot simulation ended.\n");
-    await printDivider();
+    await printMessages(["Robot simulation ended.\n", DIVIDER]);
 }
-async function printEndTestSession(succeses, totalTests) {
-    await sendMessage(`${succeses} out of ${totalTests} test cases successful.\n`);
+async function printEndTest(wasSuccessful) {
+    await printMessages([
+        `\nTest condition looks ${wasSuccessful ? "good! ✓" : "wrong! ✗"}\n`
+    ]);
+}
+// Test session related functions
+async function printEndTestSession(successes, totalTests) {
+    await sendMessage(`${successes} out of ${totalTests} test cases successful.\n`);
 }
 async function printStartTestGroup(description) {
-    await printDivider();
-    await sendMessage(`Test Case: ${description}\n`);
+    await printMessages([DIVIDER, `Test Case: ${description}\n`]);
 }
 async function printEndTestGroup(description) {
-    await sendMessage(`End Test Case: ${description}\n`);
-    await printDivider();
+    await printMessages([`End Test Case: ${description}\n`, DIVIDER]);
 }
+// Command and error related functions
 async function printHelp() {
     const commandList = [
         "PLACE X,Y,F - Places the robot at X,Y (coordinate pair), facing F (NORTH/SOUTH/EAST/WEST)",
@@ -55,10 +63,11 @@ async function printHelp() {
         "EXIT - Ends the simulation",
         "HELP - View this guide",
     ];
-    await sendMessage("\nValid commands:\n");
-    commandList.forEach(async (command) => await sendMessage(`\t${command}\n`));
+    await printMessages([
+        "\nValid commands:\n",
+        ...commandList.map((cmd) => `\t${cmd}\n`),
+    ]);
 }
-;
 async function printInvalidCommandMessage() {
     await sendMessage("Invalid command. Type 'HELP' for commands.\n");
 }

@@ -5,7 +5,15 @@ const CommandProcessor_1 = require("../../services/CommandProcessor");
 const MessageSystem_1 = require("../../services/MessageSystem");
 const Robot_1 = require("../../models/Robot");
 const Table_1 = require("../../models/Table");
-const testHelpers_1 = require("../../util/testHelpers");
+const helpers_1 = require("../../util/helpers");
+async function processCommandStrings(commandProcessor, commandStrings) {
+    commandStrings.map(async (commandString) => {
+        const command = (0, helpers_1.getCommandFromInputString)(commandString);
+        if (command) {
+            await commandProcessor.process(command);
+        }
+    });
+}
 describe("CommandProcessor Unit Tests", () => {
     let table;
     let robot;
@@ -29,27 +37,27 @@ describe("CommandProcessor Unit Tests", () => {
     });
     describe("process", () => {
         it("should place the robot on the table", async () => {
-            await (0, testHelpers_1.processCommandStrings)(commandProcessor, ["PLACE 0,0,NORTH"]);
+            await processCommandStrings(commandProcessor, ["PLACE 0,0,NORTH"]);
             expect(robot.getPlacement()).toEqual({ coordinates: { x: 0, y: 0 }, direction: "NORTH" });
         });
         it("should move the robot on the table", async () => {
             const commandStrings = ["PLACE 0,0,NORTH", "MOVE", "REPORT"];
-            await (0, testHelpers_1.processCommandStrings)(commandProcessor, commandStrings);
+            await processCommandStrings(commandProcessor, commandStrings);
             expect(process.stdout.write).toHaveBeenLastCalledWith("Output: 0,1,NORTH\n");
         });
         it("should turn the robot left", async () => {
             commandStrings = ["PLACE 0,0,NORTH", "LEFT", "REPORT"];
-            await (0, testHelpers_1.processCommandStrings)(commandProcessor, commandStrings);
+            await processCommandStrings(commandProcessor, commandStrings);
             expect(process.stdout.write).toHaveBeenLastCalledWith("Output: 0,0,WEST\n");
         });
         it("should turn the robot right", async () => {
             commandStrings = ["PLACE 0,0,NORTH", "RIGHT", "REPORT"];
-            await (0, testHelpers_1.processCommandStrings)(commandProcessor, commandStrings);
+            await processCommandStrings(commandProcessor, commandStrings);
             expect(process.stdout.write).toHaveBeenLastCalledWith("Output: 0,0,EAST\n");
         });
         it("should report the robot position", async () => {
             commandStrings = ["PLACE 0,0,NORTH", "REPORT"];
-            await (0, testHelpers_1.processCommandStrings)(commandProcessor, commandStrings);
+            await processCommandStrings(commandProcessor, commandStrings);
             expect(process.stdout.write).toHaveBeenLastCalledWith("Output: 0,0,NORTH\n");
         });
         it("should ignore invalid commands", async () => {
@@ -60,7 +68,7 @@ describe("CommandProcessor Unit Tests", () => {
                 "BLORP",
                 "REPORT",
             ];
-            await (0, testHelpers_1.processCommandStrings)(commandProcessor, commandStrings);
+            await processCommandStrings(commandProcessor, commandStrings);
             expect(process.stdout.write).toHaveBeenLastCalledWith("Output: 0,0,NORTH\n");
         });
     });

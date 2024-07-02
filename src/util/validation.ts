@@ -1,6 +1,6 @@
 // src/util/validation.ts
 
-import type { Coordinates as Coordinates, TurningDirection, CardinalDirection, CommandAction } from "../types/Types";
+import type { Coordinates, TurningDirection, CardinalDirection, CommandAction } from "../types/Types";
 
 export function isValidCardinalDirection(direction: string): boolean {
 	const CardinalDirections: CardinalDirection[] = [

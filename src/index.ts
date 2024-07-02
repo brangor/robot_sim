@@ -6,18 +6,18 @@ import { Robot } from "./models/Robot";
 import { Table } from "./models/Table";
 import { retrieveCommandsFromFile, getPathFromArgs } from "./util/fileUtil";
 import {
-  sendMessage,
   printInputPrompt,
   printFatalError,
   printUnknownFatalError,
   printStartSession,
+  printEndSession,
+  printEndTest,
   printStartTestGroup,
   printEndTestSession,
   printHelp,
   printInvalidCommandMessage,
 } from "./util/IO";
 import { getCommandFromInputString } from "./util/helpers";
-import { endSession, processCommands } from "./util/programFlow";
 import type { CommandInputList } from "./types/Types";
 
 const tableDimensions: [number, number] = [5, 5];
@@ -25,6 +25,11 @@ const table = new Table(...tableDimensions);
 const robot = new Robot();
 const messageSystem = new MessageSystem();
 const commandProcessor = new CommandProcessor(table, robot, messageSystem);
+
+function endSession() {
+  printEndSession();
+  process.exit();
+}
 
 async function main() {
   const args = process.argv.slice(2);
@@ -59,9 +64,7 @@ async function main() {
         lastSentMessage === commandInput.expectedOutput ||
         (!lastSentMessage && !commandInput.expectedOutput);
         if (matchesExpectation) successfulRuns++;
-        await sendMessage(
-          `\nTest condition looks ${matchesExpectation ? "good! ✓" : "wrong! ✗"}\n`
-        );
+        await printEndTest(matchesExpectation);
       }
       await printEndTestSession(successfulRuns, commandInputList.length);
     } else {
@@ -82,7 +85,7 @@ async function main() {
           printHelp();
         }
 
-        await processCommands([command], commandProcessor);
+        await commandProcessor.process(command);
         await printInputPrompt();
       } else {
         printInvalidCommandMessage();
