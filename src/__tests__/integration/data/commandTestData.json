@@ -1,5 +1,5 @@
 [
-    {
+  {
     "description": "Simple left turn",
     "commands": ["PLACE 0,0,NORTH", "LEFT", "REPORT"],
     "expectedOutput": "Output: 0,0,WEST"
@@ -62,6 +62,6 @@
   {
     "description": "Oops all reports",
     "commands": ["REPORT", "REPORT", "REPORT", "REPORT", "REPORT", "REPORT"],
-    "expectedOutput":"Running test case: Oops all reports"
+    "expectedOutput": null
   }
 ]

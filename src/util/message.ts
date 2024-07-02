@@ -1,23 +1,15 @@
 // src/util/message.ts
 
-import type { MessageType } from "../types/Types";
+import type { Message, MessageKind } from "../types/Types";
 
-function createMessage(type: "INFO" | "ERROR" | "DEBUG", message: string): MessageType {
+function createMessage(kind: MessageKind, message: string): Message {
 	return {
-		type,
+		kind: kind,
 		message,
 		timestamp: Date.now()
 	};
 }
 
-export function createInfoMessage(message: string): MessageType {
-	return createMessage("INFO", message);
-}
-
-export function createErrorMessage(message: string): MessageType {
-	return createMessage("ERROR", message);
-}
-
-export function createDebugMessage(message: string): MessageType {
-	return createMessage("DEBUG", message);
+export function createInfoMessage(message: string): Message {
+	return createMessage("INFO" as MessageKind, message);
 }

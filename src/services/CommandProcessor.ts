@@ -11,23 +11,20 @@ import { Robot } from "../models/Robot";
 import { Table } from "../models/Table";
 import { getPlacementFromArg } from "../util/helpers";
 import { MessageSystem } from "./MessageSystem";
-import {
-  createInfoMessage,
-  createDebugMessage,
-  createErrorMessage,
-} from "../util/message";
+import { createInfoMessage } from "../util/message";
+import { printHelp, printEndSession } from "../util/IO";
 
 import type {
-  CommandInputType,
+  CommandInput,
   TurningDirection,
-  MessageType,
+  Message,
 } from "../types/Types";
 
 export class CommandProcessor {
   private robot: Robot;
   private table: Table;
   private messageSystem: MessageSystem;
-  private commandInputQueue: CommandInputType[] = [];
+  private commandInputQueue: CommandInput[] = [];
 
   constructor(table: Table, robot: Robot, messageSystem: MessageSystem) {
     this.robot = robot;
@@ -35,32 +32,16 @@ export class CommandProcessor {
     this.messageSystem = messageSystem;
   }
 
-  async process(commandInput: CommandInputType): Promise<void> {
-    this.commandInputQueue.push(commandInput);
-    if (this.commandInputQueue.length === 1) {
-      await this.processNextCommand();
-    }
-  }
+  async process(commandInput: CommandInput): Promise<void> {
+    const type = commandInput.command;
+    if (!type) return;
 
-  private async processNextCommand(): Promise<void> {
-    if (this.commandInputQueue.length === 0) return;
-
-    const nextCommand = this.commandInputQueue.shift();
-    if (!nextCommand) return;
-
-    const type = nextCommand.command;
     let command: Command | undefined;
 
     switch (type) {
       case "PLACE":
-        if (!nextCommand.arg) {
-          await this.messageSystem.enqueueMessage(
-            createDebugMessage("Invalid PLACE command. Ignoring...")
-          );
-          break;
-        }
-
-        command = new PlaceCommand(getPlacementFromArg(nextCommand.arg));
+        if (!commandInput.placement) break;
+        command = new PlaceCommand(commandInput.placement);
         break;
       case "MOVE":
         command = new MoveCommand();
@@ -73,6 +54,10 @@ export class CommandProcessor {
         break;
       case "REPORT":
         command = new ReportCommand();
+        break;
+      case "EXIT":
+      case "HELP":
+      default:
         break;
     }
 
@@ -87,20 +72,18 @@ export class CommandProcessor {
         await this.messageSystem.enqueueMessage(message);
       }
     }
-
-    await this.processNextCommand();
   }
 
-  public getLatestOutput(): MessageType | undefined {
+  public getLatestOutput(): string | undefined {
     return this.messageSystem.getAllOutputs().pop();
   }
 
-  public getAllOutputs(): MessageType[] {
+  public getAllOutputs(): string[] {
     return this.messageSystem.getAllOutputs();
   }
 
-  public async resetSimulation(): Promise<void> {
+  public resetSimulation(): void {
     this.robot.reset();
-    await this.messageSystem.flush();
+    this.messageSystem?.reset();
   }
 }

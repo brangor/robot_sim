@@ -1,13 +1,32 @@
 // src/models/Table.ts
 
-import type { Coordinate } from "../types/Types";
-import { isValidTableCoordinate } from "../util/validation";
+import type { Placement } from "../types/Types";
+import {
+  areValidCoordinates,
+  isValidCardinalDirection,
+} from "../util/validation";
 
+function validatePlacement(
+  placement: Placement,
+  maxHeight: number = Infinity,
+  maxWidth: number = Infinity
+): boolean {
+  if (maxWidth < 0 || maxHeight < 0) return false;
+
+  const { coordinates, direction } = placement;
+
+  return (
+    isValidCardinalDirection(direction) &&
+    areValidCoordinates(coordinates) &&
+    coordinates.x! < maxWidth &&
+    coordinates.y! < maxHeight
+  );
+}
 export class Table {
   constructor(private height: number, private width: number) {}
 
-  isValidPosition(c: Coordinate): boolean {
-    return isValidTableCoordinate(c, this.height, this.width);
+  public isValidPlacement(place: Placement): boolean {
+    return validatePlacement(place, this.height, this.width);
   }
 
 	getHeight(): number {

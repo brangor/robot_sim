@@ -1,30 +1,47 @@
 // src/util/IO.ts
 
-import type { CommandProcessor } from '../services/CommandProcessor';
-import type { MessageType } from '../types/Types';
+import { MessageSystem } from '../services/MessageSystem';
 
-export function printStartSession(tableHeight: number, tableWidth: number) {
+const messageSystem = new MessageSystem();
+
+async function printDivider() {
+	await sendMessage("-".repeat(40)+"\n");
+}
+
+export async function sendMessage(message: string) {
+	messageSystem.enqueueMessage(message);
+}
+
+export async function printStartSession(tableHeight: number, tableWidth: number) {
 	console.clear();
-	process.stdout.write("Robot simulation started.");
-	process.stdout.write(`Table dimensions: ${tableHeight} x ${tableWidth}`);
-	process.stdout.write("Type 'EXIT' to quit, and 'HELP' for commands.");
-	process.stdout.write("\n> ");
+	await sendMessage("Robot simulation started.\n");
+	await printDivider();
+	await sendMessage(`Table dimensions: ${tableHeight} x ${tableWidth}\n`);
+	await sendMessage("Type 'EXIT' to quit, and 'HELP' for commands.\n");
+	await printDivider();
+	await printInputPrompt()
 }
 
-export function printEndSession() {
-	process.stdout.write("Robot simulation ended.");
-	process.exit();
+export async function printEndSession() {
+	await sendMessage("Robot simulation ended.\n");
+	await printDivider();
 }
 
-export function printStartTestSession(description: string) {
-	process.stdout.write(`Test Case: ${description}`);
+export async function printEndTestSession(succeses: number, totalTests: number) {
+	await sendMessage(`${succeses} out of ${totalTests} test cases successful.\n`);
 }
 
-export function printTestSessionInput(command: string) {
-  process.stdout.write(`> ${command}`);
+export async function printStartTestGroup(description: string) {
+	await printDivider();
+	await sendMessage(`Test Case: ${description}\n`);
 }
 
-export function printHelp() {
+export async function printEndTestGroup(description: string) {
+	await sendMessage(`End Test Case: ${description}\n`);
+	await printDivider();
+}
+
+export async function printHelp() {
 	const commandList = [
 		"PLACE X,Y,F - Places the robot at X,Y (coordinate pair), facing F (NORTH/SOUTH/EAST/WEST)",
 		"MOVE - Moves the robot forward",
@@ -35,30 +52,26 @@ export function printHelp() {
 		"HELP - View this guide",
 	];
 
-	process.stdout.write("\nValid commands:");
-	commandList.forEach((command) => process.stdout.write(`\t${command}`));
+	await sendMessage("\nValid commands:\n");
+	commandList.forEach(async (command) => await sendMessage(`\t${command}\n`));
 };
 
-export function printInvalidCommandMessage() {
-	process.stdout.write("Invalid command. Type 'HELP' for commands.");
+export async function printInvalidCommandMessage() {
+	await sendMessage("Invalid command. Type 'HELP' for commands.\n");
 }
 
-export function printInputPrompt() {
-  process.stdout.write("\n> ");
+export async function printInputPrompt(input: string = "") {
+  await sendMessage(`\n > ${input}`);
 }
 
-export function printReportMessage(x: number, y: number, direction: string) {
-	process.stdout.write(`Robot is at: ${x},${y}, facing ${direction}`);
+export async function printReportMessage(x: number, y: number, direction: string) {
+	await sendMessage(`Robot is at: ${x},${y}, facing ${direction}\n`);
 }
 
-export function printFatalError(message: string) {
-	process.stdout.write(`Fatal error: ${message}`);
-	process.exit(1);
+export async function printFatalError(message: string) {
+	await sendMessage(`Fatal error: ${message}\n`);
 }
 
-export function printOutputQueue(commandProcessor: CommandProcessor) {
-  const outputs: MessageType[] = commandProcessor.getAllOutputs();
-  outputs.forEach((output) => {
-    process.stdout.write(output.message + "\n");
-  });
+export async function printUnknownFatalError() {
+	await sendMessage("Fatal error occurred.\n");
 }

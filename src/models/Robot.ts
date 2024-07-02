@@ -1,138 +1,114 @@
 // src/models/Robot.ts
 
 import type {
-  Coordinate,
+  Coordinates as Coordinates,
   CardinalDirection,
   TurningDirection,
-  PlacementType,
-  MessageType
+  Placement
 } from "../types/Types";
 import { addCoordinates } from "../util/helpers";
-import { TurningLookup, MoveOffsetLookup } from "../util/lookups";
-import {
-  isValidCardinalDirection,
-  isValidTableCoordinate,
-  isValidTurningDirection,
-} from "../util/validation";
-import {
-  createInfoMessage,
-  createErrorMessage,
-  createDebugMessage
-} from "../util/message";
+import { MoveOffsetLookup } from "../util/lookups";
+
+const TurningLookup: {
+  [key in CardinalDirection]: { [key in TurningDirection]: CardinalDirection };
+} = {
+  NORTH: {
+    LEFT: "WEST",
+    RIGHT: "EAST",
+  },
+  EAST: {
+    LEFT: "NORTH",
+    RIGHT: "SOUTH",
+  },
+  SOUTH: {
+    LEFT: "EAST",
+    RIGHT: "WEST",
+  },
+  WEST: {
+    LEFT: "SOUTH",
+    RIGHT: "NORTH",
+  },
+};
 
 export class Robot {
-  private coordinate: Coordinate = { x: undefined, y: undefined };
+  private coordinates: Coordinates | undefined = undefined;
   private facing: CardinalDirection | undefined = undefined;
   private isPlaced: boolean = false;
-  private messageQueue: MessageType[] = [];
+  private messageQueue: string[] = [];
 
-  // Getter methods
-  public getCoordinates(): Coordinate {
-    return this.coordinate;
-  }
-
-  public getFacing(): CardinalDirection | undefined {
-    return this.facing;
-  }
-
-  public getPlacement(): PlacementType {
+  public getPlacement(): Placement | undefined {
+    if (!this.isPlaced || !this.coordinates || !this.facing) return undefined;
     return {
-      coordinates: this.coordinate,
+      coordinates: this.coordinates,
       direction: this.facing,
     };
   }
 
-  public isOnTable(): boolean {
-    return this.isPlaced;
-  }
-
-  // Message queue methods
-  public dumpMessageQueue(): MessageType[] {
-    const queue = this.messageQueue;
-    this.messageQueue = [];
-    return queue;
-  }
-
-  private addMessage(message: MessageType): void {
-    this.messageQueue.push(message);
-  }
-
-  // Validation method
-  private hasValidPosition(): boolean {
-    return (
-      this.isPlaced &&
-      !!this.coordinate &&
-      !!this.facing &&
-      isValidTableCoordinate(this.coordinate) &&
-      isValidCardinalDirection(this.facing)
-    );
-  }
-
   // Calculate next move destination
-  public getMoveDestination(): Coordinate {
-    if (!this.hasValidPosition()) return { x: undefined, y: undefined };
+  public getMoveDestination(): Placement | null {
+    if (!this.hasValidPosition()) return null;
 
-    const offset = MoveOffsetLookup[this.facing!];
-    return addCoordinates(this.coordinate, offset);
+    const nextMoveCoordinates = addCoordinates(
+      this.coordinates!,
+      MoveOffsetLookup[this.facing!]
+    );
+
+    return {
+      coordinates: nextMoveCoordinates,
+      direction: this.facing!,
+    };
   }
 
   // Reset robot state
   public reset(): void {
     this.isPlaced = false;
-    this.coordinate = { x: undefined, y: undefined };
+    this.coordinates = undefined;
     this.facing = undefined;
+    this.messageQueue = [];
   }
 
-  // Place the robot
-  public place(placement: PlacementType): void {
-    if (
-      !isValidCardinalDirection(placement.direction) ||
-      !isValidTableCoordinate(placement.coordinates)
-    ) {
-      this.addMessage(createErrorMessage("Invalid placement."));
-      return;
-    }
-
-    this.coordinate = placement.coordinates;
+  public place(placement: Placement): void {
+    this.coordinates = placement.coordinates;
     this.facing = placement.direction;
     this.isPlaced = true;
-
-    const message = `Robot placed at: ${placement.coordinates.x},${placement.coordinates.y}, facing ${placement.direction}`;
-    this.addMessage(createDebugMessage(message));
   }
 
-  // Report robot's position
   public report(): void {
     if (!this.hasValidPosition()) return;
 
-    const report = `${this.coordinate.x},${this.coordinate.y},${this.facing}`;
-    this.addMessage(createInfoMessage(report));
+    const report = `Output: ${this.coordinates!.x},${this.coordinates!.y},${this.facing!}`;
+    this.addMessage(report);
   }
 
-  // Move the robot
   public move(): void {
     if (!this.hasValidPosition()) return;
+    const nextMovePlacement = this.getMoveDestination();
+    if (!nextMovePlacement) return;
 
-    const nextMoveCoordinates = this.getMoveDestination();
-    if (!isValidTableCoordinate(nextMoveCoordinates)) {
-      this.addMessage(
-        createDebugMessage("Move ignored. Robot would fall off the table.")
-      );
-      return;
-    }
-
-    const message = `Robot moved to: ${this.coordinate.x},${this.coordinate.y}`;
-    this.coordinate = nextMoveCoordinates;
-
-    this.addMessage(createDebugMessage(message));
+    this.coordinates = nextMovePlacement.coordinates;
   }
 
-  // Turn the robot
   public turn(turnDirection: TurningDirection): void {
     if (!this.hasValidPosition()) return;
-    if (!isValidTurningDirection(turnDirection)) return;
-
     this.facing = TurningLookup[this.facing!][turnDirection];
-    this.addMessage(createDebugMessage(`Robot turned to: ${this.facing}`));
+  }
+
+  // Message queue methods
+  public dumpMessageQueue(): string[] {
+    const queue = this.messageQueue;
+    this.messageQueue = [];
+    return queue;
+  }
+
+  private addMessage(message: string): void {
+    this.messageQueue.push(message);
+  }
+
+  private hasValidPosition(): boolean {
+    return (
+      this.isPlaced &&
+      this.coordinates !== undefined &&
+      this.facing !== undefined
+    );
   }
 }

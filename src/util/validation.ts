@@ -1,74 +1,72 @@
 // src/util/validation.ts
 
-import { Command } from "../models/Command";
+import type { Coordinates as Coordinates, TurningDirection, CardinalDirection, CommandAction, CommandInputList, CommandInput } from "../types/Types";
 
-import type { Coordinate, TurningDirection, CardinalDirection, CommandType, TestDataType, CommandInputType } from "../types/Types";
-
-const CardinalDirections: CardinalDirection[] = [
-  "NORTH",
-  "EAST",
-  "SOUTH",
-  "WEST",
-];
-const TurningDirections: TurningDirection[] = ["LEFT", "RIGHT"];
-
-const CommandTypes: CommandType[] = [
-	"PLACE",
-	"MOVE",
-	"LEFT",
-	"RIGHT",
-	"REPORT",
-	"EXIT",
-	"HELP"
-];
-
-// Function to check if a number is an integer and optionally within a range
-export function isValidTableCoordinate(coordinate: Coordinate, maxWidth: number = Infinity, maxHeight: number = Infinity): boolean {
-	if (maxWidth < 0 || maxHeight < 0) return false;
-	if (coordinate === undefined || coordinate.x === undefined || coordinate.y === undefined) return false;
-
-	return (
-		(Number.isInteger(coordinate.x) && Number.isInteger(coordinate.y)) &&
-		(coordinate.x >= 0 && coordinate.x < maxWidth) &&
-		(coordinate.y >= 0 && coordinate.y < maxHeight)
-	);
-}
-
-export function isValidCardinalDirection(direction: string | undefined): boolean {
+export function isValidCardinalDirection(direction: string): boolean {
+	const CardinalDirections: CardinalDirection[] = [
+		"NORTH",
+		"EAST",
+		"SOUTH",
+		"WEST",
+	];
   return CardinalDirections.includes(direction as CardinalDirection);
 }
 
 export function isValidTurningDirection(direction: TurningDirection | undefined): boolean {
+	const TurningDirections: TurningDirection[] = ["LEFT", "RIGHT"];
 	return TurningDirections.includes(direction as TurningDirection);
 }
 
-export function isValidCommandType(commandType: CommandType | undefined): boolean {
-	return CommandTypes.includes(commandType as CommandType);
+function isValidCommandType(command: string): boolean {
+	const CommandTypes: CommandAction[] = [
+    "PLACE",
+    "MOVE",
+    "LEFT",
+    "RIGHT",
+    "REPORT",
+    "EXIT",
+    "HELP",
+  ];
+	return CommandTypes.includes(command as CommandAction);
 }
 
-function isValidInteger(value: string): boolean {
-	return Number.isInteger(parseInt(value));
-};
+export function areValidCoordinates(coordinates: Coordinates): boolean {
+	return (
+		coordinates.x !== undefined &&
+		coordinates.y !== undefined &&
+		Number.isInteger(coordinates.x) &&
+		Number.isInteger(coordinates.y) &&
+		coordinates.x >= 0 &&
+		coordinates.y >= 0
+	);
+}
 
-function isValidCoordinateString(value: string): boolean {
-	const parts = value.split(",");
-	if (parts.length !== 3) return false;
-	if (!isValidInteger(parts[0]) || !isValidInteger(parts[1])) return false;
-	return isValidCardinalDirection(parts[2]);
+function isValidPlacementString(value: string): boolean {
+	if (!value.includes(",") || value.split(",").length !== 3) return false;
+
+	const parts = value.split(",").map((part) => part.trim());
+
+	const coordinates = {
+		x: parseInt(parts[0]),
+		y: parseInt(parts[1]),
+	};
+	const direction = parts[2];
+
+	return areValidCoordinates(coordinates) && isValidCardinalDirection(direction);
 };
 
 export function isValidCommandString(value: string): boolean {
-	const parts = value.split(" ");
-	if (!isValidCommandType(parts[0] as CommandType)) return false;
-	if (parts.length === 1) return true;
-	if (parts.length === 2) return (parts[0] === "PLACE") && isValidCoordinateString(parts[1]);
-	return false;
-};
+	let parts: string[] = [];
+  if (!value) return false;
 
-export function isValidTestData(data: TestDataType[]): boolean {
-	if (!Array.isArray(data)) return false;
-	return data.every((testCase) => {
-		if (!testCase.description || !testCase.commands) return false;
-		return testCase.commands.every((command) => isValidCommandString(command.raw));
-	});
-};
+  if (value.includes(" ")) {
+    parts = value.split(" ");
+  } else {
+    parts.push(value);
+  }
+  if (!isValidCommandType(parts[0])) return false;
+  if (parts.length === 1) return true;
+  if (parts.length === 2)
+    return parts[0] === "PLACE" && isValidPlacementString(parts[1]);
+  return false;
+}

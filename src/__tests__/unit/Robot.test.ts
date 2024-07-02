@@ -8,7 +8,7 @@ function getLastMessage(robot: Robot): string | undefined {
 	if (messages.length === 0) {
 		return undefined;
 	}
-	return messages[messages.length - 1].message;
+	return messages[messages.length - 1];
 }
 
 describe('Robot', () => {
@@ -45,7 +45,7 @@ describe('Robot', () => {
 	test('should be placeable', () => {
 		robot.place({ coordinates: { x: 2, y: 2 }, direction: "NORTH" });
 		robot.report();
-		expect(getLastMessage(robot)).toBe("2,2,NORTH");
+		expect(getLastMessage(robot)).toBe("Output: 2,2,NORTH");
 	});
 
 	describe('after being placed', () => {
@@ -57,21 +57,21 @@ describe('Robot', () => {
 			robot.move();
 
 			robot.report();
-			expect(getLastMessage(robot)).toBe('2,3,NORTH');
+			expect(getLastMessage(robot)).toBe("Output: 2,3,NORTH");
 		});
 
 		test('should be able to turn left', () => {
 			robot.turn("LEFT");
 
 			robot.report();
-			expect(getLastMessage(robot)).toBe('2,2,WEST');
+			expect(getLastMessage(robot)).toBe("Output: 2,2,WEST");
 		});
 
 		test('should be able to turn right', () => {
 			robot.turn("RIGHT");
 
 			robot.report();
-			expect(getLastMessage(robot)).toBe('2,2,EAST');
+			expect(getLastMessage(robot)).toBe("Output: 2,2,EAST");
 		});
 
 		test('should be able to move in all directions', () => {
@@ -79,25 +79,25 @@ describe('Robot', () => {
 
 			robot.report();
 
-			expect(getLastMessage(robot)).toBe("2,3,NORTH");
+			expect(getLastMessage(robot)).toBe("Output: 2,3,NORTH");
 
 			robot.turn("LEFT");
 			robot.move();
 
 			robot.report();
-			expect(getLastMessage(robot)).toBe('1,3,WEST');
+			expect(getLastMessage(robot)).toBe("Output: 1,3,WEST");
 
 			robot.turn("LEFT");
 			robot.move();
 
 			robot.report();
-			expect(getLastMessage(robot)).toBe('1,2,SOUTH');
+			expect(getLastMessage(robot)).toBe("Output: 1,2,SOUTH");
 
 			robot.turn("LEFT");
 			robot.move();
 
 			robot.report();
-			expect(getLastMessage(robot)).toBe('2,2,EAST');
+			expect(getLastMessage(robot)).toBe("Output: 2,2,EAST");
 		});
 	});
 });

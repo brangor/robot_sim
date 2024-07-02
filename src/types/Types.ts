@@ -1,33 +1,35 @@
-export type Coordinate = {
-  x: number | undefined;
-  y: number | undefined;
+export type Coordinates = {
+  x: number;
+  y: number;
 };
 
 export type CardinalDirection = "NORTH" | "EAST" | "SOUTH" | "WEST";
 
 export type TurningDirection = "LEFT" | "RIGHT";
 
-export type CommandType = "PLACE" | "MOVE" | "LEFT" | "RIGHT" | "REPORT" | "EXIT" | "HELP";
+export type CommandAction = "PLACE" | "MOVE" | "LEFT" | "RIGHT" | "REPORT" | "EXIT" | "HELP";
 
-export type CommandInputType = {
-  command: CommandType | undefined;
-  arg: string | undefined;
+export type CommandInput = {
+  command: CommandAction;
+  placement: Placement | null;
   raw: string;
 };
 
-export type TestDataType = {
+export type CommandInputList = {
   description: string;
-  commands: CommandInputType[];
-  expectedOutput: string;
+  commands: CommandInput[];
+  expectedOutput: string | null;
 };
 
-export type PlacementType = {
-  coordinates: Coordinate;
-  direction: CardinalDirection | undefined;
+export type Placement = {
+  coordinates: Coordinates;
+  direction: CardinalDirection;
 };
 
-export type MessageType = {
-  type: "INFO" | "ERROR" | "DEBUG";
+export type Message = {
+  kind: MessageKind;
   message: string;
   timestamp: number;
 };
+
+export type MessageKind = "INFO" | "ERROR" | "DEBUG";

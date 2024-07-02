@@ -1,15 +1,15 @@
 {
   "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "./src",
     "target": "ES2020",
     "module": "commonjs",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "outDir": "./dist",
-    "rootDir": "./src",
     "typeRoots": ["./node_modules/@types", "./src/types"],
   },
-  "include": ["src/**/*.ts", "src/__tests__/integration/index.test.ts.maybenot", "src/__tests__/integration/IO.test.ts.maybe"],
+  "include": ["src/**/*.ts"],
   "exclude": ["node_modules"]
 }

@@ -8,16 +8,12 @@ import {
 } from "../../models/Command";
 import { Robot } from "../../models/Robot";
 import { Table } from "../../models/Table";
-import type { PlacementType, CardinalDirection, MessageType} from "../../types/Types";
-
-function getInfoMessages(messages: MessageType[]): string[] {
-  return messages.filter((message) => message.type === "INFO").map((message) => message.message);
-}
+import type { Placement, CardinalDirection, Message} from "../../types/Types";
 
 describe("Commands", () => {
   let robot: Robot;
   let table: Table;
-  const defaultPlacement: PlacementType = {
+  const defaultPlacement: Placement = {
     coordinates: { x: 0, y: 0 },
     direction: "NORTH" as CardinalDirection,
   };
@@ -48,10 +44,7 @@ describe("Commands", () => {
       const placeCommand = new PlaceCommand(outOfBoundsPlacement);
       placeCommand.execute(robot, table);
 
-      expect(robot.getPlacement()).toEqual({
-        coordinates: { x: undefined, y: undefined },
-        direction: undefined,
-      });
+      expect(robot.getPlacement()).toEqual(undefined);
     });
 
     it("should not place the robot facing an invalid direction", () => {
@@ -64,10 +57,7 @@ describe("Commands", () => {
       const placeCommand = new PlaceCommand(invalidDirectionPlacement);
       placeCommand.execute(robot, table);
 
-      expect(robot.getPlacement()).toEqual({
-        coordinates: { x: undefined, y: undefined },
-        direction: undefined,
-      });
+      expect(robot.getPlacement()).toEqual(undefined);
     });
 
     it("should not place the robot with invalid coordinates", () => {
@@ -78,10 +68,7 @@ describe("Commands", () => {
       const placeCommand = new PlaceCommand(nonIntegerCoordinatePlacement);
       placeCommand.execute(robot, table);
 
-      expect(robot.getPlacement()).toEqual({
-        coordinates: { x: undefined, y: undefined },
-        direction: undefined,
-      });
+      expect(robot.getPlacement()).toEqual(undefined);
     });
   });
 
@@ -99,7 +86,7 @@ describe("Commands", () => {
     it("should not move the robot before being placed", () => {
       moveCommand.execute(robot, table);
 
-      const messages = getInfoMessages(robot.dumpMessageQueue());
+      const messages = robot.dumpMessageQueue();
       expect(messages).toEqual([]);
     });
 
@@ -112,8 +99,8 @@ describe("Commands", () => {
         moveCommand.execute(robot, table);
         reportCommand.execute(robot, table);
 
-        const messages = getInfoMessages(robot.dumpMessageQueue());
-        expect(messages).toEqual(["0,1,NORTH"]);
+        const messages = robot.dumpMessageQueue();
+        expect(messages).toEqual(["Output: 0,1,NORTH"]);
       });
 
       it("should not move the robot outside the table", () => {
@@ -122,8 +109,8 @@ describe("Commands", () => {
         }
         reportCommand.execute(robot, table);
 
-        const messages = getInfoMessages(robot.dumpMessageQueue());
-        expect(messages).toEqual(["0,4,NORTH"]);
+        const messages = robot.dumpMessageQueue();
+        expect(messages).toEqual(["Output: 0,4,NORTH"]);
       });
     });
   });
@@ -144,7 +131,7 @@ describe("Commands", () => {
     it("should not turn the robot before being placed", () => {
       turnRightCommand.execute(robot, table);
 
-      const messages = getInfoMessages(robot.dumpMessageQueue());
+      const messages = robot.dumpMessageQueue();
       expect(messages).toEqual([]);
     });
 
@@ -157,16 +144,16 @@ describe("Commands", () => {
         turnLeftCommand.execute(robot, table);
         reportCommand.execute(robot, table);
 
-        const messages = getInfoMessages(robot.dumpMessageQueue());
-        expect(messages).toEqual(["0,0,WEST"]);
+        const messages = robot.dumpMessageQueue();
+        expect(messages).toEqual(["Output: 0,0,WEST"]);
       });
 
       it("should turn the robot right", () => {
         turnRightCommand.execute(robot, table);
         reportCommand.execute(robot, table);
 
-        const messages = getInfoMessages(robot.dumpMessageQueue());
-        expect(messages).toEqual(["0,0,EAST"]);
+        const messages = robot.dumpMessageQueue();
+        expect(messages).toEqual(["Output: 0,0,EAST"]);
       });
     });
   });
@@ -183,7 +170,7 @@ describe("Commands", () => {
     it("should not report the robot before being placed", () => {
       reportCommand.execute(robot, table);
 
-      const messages = getInfoMessages(robot.dumpMessageQueue());
+      const messages = robot.dumpMessageQueue();
       expect(messages).toEqual([]);
     });
 
@@ -191,8 +178,8 @@ describe("Commands", () => {
       placeCommand.execute(robot, table);
       reportCommand.execute(robot, table);
 
-      const messages = getInfoMessages(robot.dumpMessageQueue());
-      expect(messages).toEqual(["0,0,NORTH"]);
+      const messages = robot.dumpMessageQueue();
+      expect(messages).toEqual(["Output: 0,0,NORTH"]);
     });
   });
 });

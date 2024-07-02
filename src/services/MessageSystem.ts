@@ -1,43 +1,46 @@
 // src/services/MessageSystem.ts
 
 import { Writable } from "stream";
-import type { MessageType } from "../types/Types";
+import type { Message } from "../types/Types";
 
 export class MessageSystem {
-  private messageQueue: MessageType[] = [];
-  private processing: boolean = false;
+  private messageQueue: string[] = [];
+  private messageHistory: string[] = [];
   private writableStream: Writable;
 
   constructor() {
     this.writableStream = process.stdout;
   }
 
-  public async enqueueMessage(message: MessageType): Promise<void> {
+  public async enqueueMessage(message: string): Promise<void> {
     this.messageQueue.push(message);
     await this.processMessages();
+    this.messageHistory.push(message);
+  }
+
+  public getLatestSentMessage(): string | undefined {
+    if (this.messageHistory.length === 0) {
+      return undefined;
+    }
+    return this.messageHistory[this.messageHistory.length - 1];
   }
 
   private async processMessages(): Promise<void> {
-    if (this.processing) return;
-
-    this.processing = true;
     while (this.messageQueue.length > 0) {
       const message = this.messageQueue.shift();
       if (message) {
-        if (message.type === "ERROR" || message.type === "DEBUG") {
-          // Skip it for now but still remove from the queue
-          continue;
-        } else {
-          await this.printMessage(message.message);
-        }
+        await this.printMessage(message);
       }
     }
-    this.processing = false;
+  }
+
+  public async processingComplete(): Promise<void> {
+    await this.processMessages();
   }
 
   private async printMessage(message: string): Promise<void> {
     return new Promise((resolve, reject) => {
-      this.writableStream.write(message + "\n", (err) => {
+      this.writableStream.write(`${message}`, (err) => {
         if (err) {
           reject(err);
         } else {
@@ -47,22 +50,12 @@ export class MessageSystem {
     });
   }
 
-  public async reset(): Promise<void> {
-    await this.completeAllMessages();
+  public reset(): void {
     this.messageQueue = [];
-    this.processing = false;
+    this.messageHistory = [];
   }
 
-  public getAllOutputs(): MessageType[] {
+  public getAllOutputs(): string[] {
     return [...this.messageQueue];
-  }
-
-  public async completeAllMessages(): Promise<void> {
-    while (this.messageQueue.length > 0) {
-      const message = this.messageQueue.shift();
-      if (message) {
-        await this.printMessage(message.message);
-      }
-    }
   }
 }

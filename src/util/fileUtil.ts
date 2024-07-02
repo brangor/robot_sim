@@ -1,57 +1,65 @@
 // src/util/fileUtil.ts
+
 import fs from "fs";
 import path from "path";
-import { TestDataType } from "../types/Types";
-import { isValidTestData } from "./validation";
+import { CommandInputList } from "../types/Types";
+import { getCommandFromInputString } from "./helpers";
 
-
-export function retrieveCommandsFromFile(filePath: string): TestDataType[] | void {
-  let testCases: any;
-
-  fs.readFile(filePath, "utf-8", (error, data) => {
-    if (error) {
-      console.error(`Error reading file: ${error}`);
-      return;
-    }
-
-    console.clear();
-    process.stdout.write("Automated robot simulation started.");
-
-    try {
-      testCases = JSON.parse(
-        data,
-        (_: string, value: any): TestDataType | undefined => {
-          if (
-            value &&
-            typeof value === "object" &&
-            "description" in value &&
-            "commands" in value &&
-            "expectedOutput" in value
-          ) {
-            return value as TestDataType;
+function reviver(key: string, value: any): any {
+  if (key === "" || (typeof value === "object" && value !== null)) {
+    if (
+      value &&
+      typeof value === "object" &&
+      "description" in value &&
+      "commands" in value &&
+      "expectedOutput" in value
+    ) {
+      const commands = value.commands
+        .map((commandString: string) => {
+          const command = getCommandFromInputString(commandString);
+          if (!command) {
+            console.error(`Invalid command format: ${commandString}`);
           }
-
-          // Returns undefined (skips) when record doesn't match TestDataType
-          return undefined;
-        }
-      );
-    } catch (parseError) {
-      console.error(`Error parsing JSON data: ${parseError}`);
+          return command;
+        })
+        .filter(Boolean); // Filter out any undefined values
+      return {
+        ...value,
+        commands,
+      } as CommandInputList;
     }
+  }
+  return value;
+}
 
-    if (!testCases) {
-      console.error("No test cases found in file.");
-      return;
-    } else if (!isValidTestData(testCases)) {
-      console.error("Invalid test data format.");
-      return;
+export function retrieveCommandsFromFile( filePath: string ): CommandInputList[] {
+  let data: string;
+  let testCases: CommandInputList[];
+
+  try {
+    data = fs.readFileSync(filePath, "utf-8");
+  } catch (parseError) {
+    if (parseError instanceof Error) {
+      throw parseError;
+    } else {
+      throw new Error("An unknown error occurred while reading the file.");
     }
+  }
 
-    return testCases;
-  });
-};
+  testCases = JSON.parse(data, reviver);
 
-export function getPathFromArgs(args: string[]): string | undefined {
-  if (args.length === 0) return undefined;
-  return path.resolve(args[0]);
+  if (testCases.length === 0) {
+    throw new Error("No test cases found in file.");
+  }
+
+  return testCases;
+}
+
+export function getPathFromArgs(args: string[]): string {
+  try {
+    if (args.length === 0) throw "Cannot find file path in arguments.";
+    return path.resolve(args[0]);
+  } catch (error) {
+    throw new Error(`Error parsing arguments: ${error}`);
+  }
 }

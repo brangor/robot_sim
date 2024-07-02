@@ -4,8 +4,10 @@
   "description": "",
   "main": "src/index.ts",
   "scripts": {
-    "test": "jest",
-    "start": "ts-node src/index.ts"
+    "build": "tsc",
+    "test": "npm run build && jest",
+    "test:watch": "npm run build && jest --watch",
+    "start": "npm run build && node dist/index.js"
   },
   "keywords": [],
   "author": "",
